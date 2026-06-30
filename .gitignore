@@ -7,3 +7,6 @@ dist/
 *.log
 .DS_Store
 Thumbs.db
+
+# TypeScript incremental build info (regenerated on every build)
+tsconfig.tsbuildinfo
