@@ -40,7 +40,7 @@ const ScoringInputSchema = z.object({
 })
 
 export async function POST(req: NextRequest) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   // Kill switch check
   const { armed } = await checkKillSwitch(supabase)
@@ -104,7 +104,7 @@ export async function GET(_req: NextRequest) {
   const { user, error: authError } = await requireUser()
   if (authError) return authError
 
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data, error } = await supabase
     .from('property_distress_scores')
     .select('*')

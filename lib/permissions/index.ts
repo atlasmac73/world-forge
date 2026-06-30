@@ -24,7 +24,7 @@ const ROLE_HIERARCHY: Record<AppRole, number> = {
 export async function requireUser(): Promise<
   { user: User; error: null } | { user: null; error: NextResponse }
 > {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user }, error } = await supabase.auth.getUser()
   if (error || !user) {
     return {

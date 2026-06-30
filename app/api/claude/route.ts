@@ -40,7 +40,7 @@ Be concise, strategic, data-driven. Reference specific system components. Help u
 
 export async function POST(req: NextRequest) {
   // ─── 1. Auth check ────────────────────────────────────────────────────────
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
 
   if (authError || !user) {

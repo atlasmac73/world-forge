@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
  * Gated server-side via requireAdmin (queries profiles by user_id).
  */
 export default async function ResearchArenaPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 

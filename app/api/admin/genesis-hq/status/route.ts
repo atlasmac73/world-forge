@@ -13,7 +13,7 @@ import type { GenesisHqAdminStatus } from '@/lib/genesis-hq/types'
 export async function GET() {
   try {
     const ctx = await requireGenesisHqAccess()
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const counts = await Promise.all(
       [

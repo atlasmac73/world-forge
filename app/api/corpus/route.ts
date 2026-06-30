@@ -140,7 +140,7 @@ Max 5 ideas per file. Empty array if nothing notable.`,
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   // Auth + owner gate
   const { data: { user } } = await supabase.auth.getUser()

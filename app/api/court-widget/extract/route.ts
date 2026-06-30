@@ -27,7 +27,7 @@ const ExtractSchema = z.object({
 })
 
 export async function POST(req: NextRequest) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { armed } = await checkKillSwitch(supabase)
   if (armed) return NextResponse.json(KILL_SWITCH_RESPONSE, { status: 503 })
 

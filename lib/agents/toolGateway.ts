@@ -70,7 +70,7 @@ const TOOL_AUDIT_ACTION: Partial<Record<string, AuditAction>> = {
 // ─── Main Gateway ──────────────────────────────────────────────────────────────
 
 export async function callTool(req: GatewayRequest): Promise<GatewayResponse> {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   // 1. AUTH CHECK
   const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -243,7 +243,7 @@ Return JSON with: found_phone (array), found_email (array), found_addresses (arr
 // ─── Market Heatmap ────────────────────────────────────────────────────────────
 
 async function generateHeatmapData(input: Record<string, unknown>): Promise<GatewayResponse> {
-  const supabase = createClient()
+  const supabase = await createClient()
   const state = (input.state as string) ?? 'WV'
 
   const { data: ainData } = await supabase

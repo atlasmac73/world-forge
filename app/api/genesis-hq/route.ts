@@ -13,7 +13,7 @@ import type { GenesisHqOverview, GenesisHqPhase, GenesisHqKanbanColumn } from '@
 export async function GET() {
   try {
     await requireGenesisHqAccess()
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const [phasesRes, areasRes, tasksRes, columnsRes, cardsRes, ideasRes, mindmapRes, moatSectionsRes, moatItemsRes] =
       await Promise.all([

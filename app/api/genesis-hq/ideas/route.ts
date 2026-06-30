@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     const limit = Math.min(Number(searchParams.get('limit')) || GENESIS_HQ_IDEA_PAGE_SIZE, 100)
     const offset = Number(searchParams.get('offset')) || 0
 
-    const supabase = createClient()
+    const supabase = await createClient()
     let query = supabase.from('genesis_hq_ideas').select('*', { count: 'exact' }).order('source_number')
 
     if (category && category !== 'ALL') query = query.eq('category', category)

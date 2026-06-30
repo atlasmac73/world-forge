@@ -69,7 +69,7 @@ async function checkIntegrations(): Promise<Record<string, { status: string; det
 }
 
 export async function GET(_req: NextRequest) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -117,7 +117,7 @@ export async function GET(_req: NextRequest) {
 
 export async function POST(_req: NextRequest) {
   const supabase = createServiceClient()
-  const client = createClient()
+  const client = await createClient()
   const { data: { user } } = await client.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 

@@ -6,7 +6,7 @@ import { CommandCenterClient } from '@/components/admin/CommandCenterClient'
 export const dynamic = 'force-dynamic'
 
 export default async function CommandCenterPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 

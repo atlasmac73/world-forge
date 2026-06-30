@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     })
 
     // Async: update campaign stats (non-critical)
-    const supabase = createClient()
+    const supabase = await createClient()
     if (campaign_id) {
       await supabase.rpc('increment_campaign_sent', { p_campaign_id: campaign_id })
     }

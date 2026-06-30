@@ -18,7 +18,7 @@ import { writeAuditLog } from '@/lib/audit/logger'
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   // Auth check
   const { data: { user } } = await supabase.auth.getUser()

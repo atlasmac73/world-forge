@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   const { user, error: authError } = await requireUser()
   if (authError) return authError
 
-  const supabase = createClient()
+  const supabase = await createClient()
   const { searchParams } = new URL(req.url)
   const limit = Math.min(250, parseInt(searchParams.get('limit') ?? '250'))
   const county = searchParams.get('county')
@@ -87,7 +87,7 @@ export async function POST(_req: NextRequest) {
   const { user, error: authError } = await requireUser()
   if (authError) return authError
 
-  const supabase = createClient()
+  const supabase = await createClient()
 
   // Re-fetch top 250
   const { data: props } = await supabase

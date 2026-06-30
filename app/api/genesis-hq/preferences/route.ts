@@ -12,7 +12,7 @@ import { UpdateGenesisHqPreferencesSchema } from '@/lib/genesis-hq/validators'
 export async function GET() {
   try {
     const ctx = await requireGenesisHqAccess()
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('genesis_hq_user_preferences')
       .select('*')
@@ -35,7 +35,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
     }
 
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('genesis_hq_user_preferences')
       .upsert({ user_id: ctx.userId, ...parsed.data }, { onConflict: 'user_id' })

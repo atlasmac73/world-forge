@@ -20,7 +20,7 @@ const STRIPE_PRICE_IDS: Partial<Record<TierCode, string>> = {
 }
 
 export async function GET(_req: NextRequest) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   // Get current user (optional — tiers are public)
   const { data: { user } } = await supabase.auth.getUser()

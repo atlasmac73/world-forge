@@ -15,7 +15,7 @@ export async function GET(_req: NextRequest) {
   const { error: authError } = await requireUser()
   if (authError) return authError
 
-  const supabase = createClient()
+  const supabase = await createClient()
 
   // Get all counties with latest score
   const { data: counties, error } = await supabase

@@ -14,7 +14,7 @@ import { checkKillSwitch } from '@/lib/agents/killSwitch'
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   // Auth
   const { data: { user } } = await supabase.auth.getUser()

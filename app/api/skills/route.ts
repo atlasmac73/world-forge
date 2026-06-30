@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
   const offset   = Number(searchParams.get('offset') ?? '0')
 
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     let query = supabase
       .from('skills')
       .select('*', { count: 'exact' })

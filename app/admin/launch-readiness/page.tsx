@@ -10,7 +10,7 @@ import { LaunchReadinessClient } from '@/components/admin/LaunchReadinessClient'
 export const dynamic = 'force-dynamic'
 
 export default async function LaunchReadinessPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 

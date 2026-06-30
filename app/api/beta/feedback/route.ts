@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: parsed.error.flatten().fieldErrors }, { status: 400 })
     }
 
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('beta_feedback')
       .insert({ ...parsed.data, user_id: user.id })
@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Own feedback only
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data, error } = await supabase
     .from('beta_feedback')
     .select('*')

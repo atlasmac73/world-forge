@@ -18,7 +18,7 @@ type PortalRow = {
 }
 
 export async function GET(_req: NextRequest) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 

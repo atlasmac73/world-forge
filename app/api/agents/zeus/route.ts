@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic'
 const OWNER_EMAILS = ['slisaac89@gmail.com', 'atlasmac73@gmail.com']
 
 export async function POST(req: NextRequest) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   // Auth
   const { data: { user } } = await supabase.auth.getUser()

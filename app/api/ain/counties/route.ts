@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   const { error: authError } = await requireUser()
   if (authError) return authError
 
-  const supabase = createClient()
+  const supabase = await createClient()
   const { searchParams } = new URL(req.url)
   const region = searchParams.get('region')
   const grade  = searchParams.get('grade')

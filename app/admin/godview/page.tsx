@@ -11,7 +11,7 @@ import { GodViewClient } from '@/components/admin/GodViewClient'
 export const dynamic = 'force-dynamic'
 
 export default async function GodViewPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) redirect('/login')

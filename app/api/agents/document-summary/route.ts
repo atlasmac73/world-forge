@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic'
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 export async function POST(req: NextRequest) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 

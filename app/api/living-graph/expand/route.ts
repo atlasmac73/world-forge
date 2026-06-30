@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { seed } = parsed.data
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Mock mode when AI not configured
     if (!process.env.ANTHROPIC_API_KEY) {
