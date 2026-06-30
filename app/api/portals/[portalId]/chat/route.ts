@@ -67,7 +67,7 @@ const MODEL_BY_TIER: Record<string, string> = {
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { portalId: string } }
+  { params }: { params: Promise<{ portalId: string }> }
 ) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -78,7 +78,7 @@ export async function POST(
   if (armed) {
     await writeAuditLog({
       user_id: user.id, action: 'AGENT_RUN_BLOCKED',
-      resource_type: 'portal.chat', resource_id: params.portalId, metadata: { reason: 'kill_switch' },
+      resource_type: 'portal.chat', resource_id: (await params).portalId, metadata: { reason: 'kill_switch' },
     })
     return NextResponse.json(KILL_SWITCH_RESPONSE, { status: 503 })
   }
@@ -115,7 +115,7 @@ export async function POST(
   const { message, mode = 'CHAT', history = [] } = await req.json()
   if (!message?.trim()) return NextResponse.json({ error: 'message required' }, { status: 400 })
 
-  const portalId = params.portalId
+  const portalId = (await params).portalId
   const portalContext = PORTAL_CONTEXTS[portalId] ?? PORTAL_CONTEXTS.superllm
   const modeContext = MODE_CONTEXTS[mode] ?? MODE_CONTEXTS.CHAT
 

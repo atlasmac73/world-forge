@@ -17,7 +17,7 @@ import { footprintDerivedMeasurements } from '@/lib/measurement/enrichmentConstr
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { user, error: authError } = await requireUser()
   if (authError) return authError
   const { error: adminError } = await requireAdmin(user.id)
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   const supabase = createServiceClient()
   const { data: capture } = await supabase
-    .from('site_captures').select('enrichment').eq('id', params.id).single()
+    .from('site_captures').select('enrichment').eq('id', (await params).id).single()
 
   const derived = footprintDerivedMeasurements((capture?.enrichment ?? {}) as Record<string, never>, unit)
   if (derived.length === 0) {
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   for (const d of derived) {
     const result = fuseObservations([d.observation], unit)
     const { data } = await supabase.from('measurements').insert({
-      capture_id: params.id,
+      capture_id: (await params).id,
       label: d.label,
       kind: d.kind,
       unit: d.kind === 'area' ? `${unit}2` : unit,
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   await writeAuditLog({
     user_id: user.id, action: 'SITE_MEASUREMENT_RUN',
-    resource_type: 'site_captures', resource_id: params.id,
+    resource_type: 'site_captures', resource_id: (await params).id,
     metadata: { auto: true, derived: created.length },
   })
 

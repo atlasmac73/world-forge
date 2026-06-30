@@ -6,7 +6,7 @@
  * Isaac Brandon Burdette · Atlas Genesis Matrix LLC
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, MapPin, TrendingUp, AlertTriangle, Zap, Target, RefreshCw } from 'lucide-react'
 import { clsx } from 'clsx'
@@ -27,12 +27,13 @@ const GRADE_TO_SIGNAL: Record<string, 'critical' | 'hot' | 'warm' | 'cool' | 'co
   CRITICAL: 'critical', HOT: 'hot', WARM: 'warm', COOL: 'cool', COLD: 'cold', UNKNOWN: 'cold',
 }
 
-export default function CountyPage({ params }: { params: { name: string } }) {
+export default function CountyPage({ params }: { params: Promise<{ name: string }> }) {
   const router = useRouter()
   const [county, setCounty] = useState<CountyData | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const countyName = decodeURIComponent(params.name)
+  const { name } = use(params)
+  const countyName = decodeURIComponent(name)
 
   useEffect(() => {
     async function fetchCounty() {

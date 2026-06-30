@@ -10,7 +10,7 @@ import { requireGenesisHqOwner, handleGenesisHqPermissionError } from '@/lib/gen
 import { UpdateTaskSchema } from '@/lib/genesis-hq/validators'
 import { writeAuditLog } from '@/lib/audit/logger'
 
-export async function PATCH(req: NextRequest, { params }: { params: { taskId: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ taskId: string }> }) {
   try {
     const ctx = await requireGenesisHqOwner()
     const body = await req.json()
@@ -23,7 +23,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { taskId: st
     const { data, error } = await supabase
       .from('genesis_hq_tasks')
       .update(parsed.data)
-      .eq('id', params.taskId)
+      .eq('id', (await params).taskId)
       .select()
       .single()
 
@@ -34,7 +34,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { taskId: st
       user_id: ctx.userId,
       action: 'GENESIS_HQ_TASK_UPDATED',
       resource_type: 'genesis_hq',
-      resource_id: params.taskId,
+      resource_id: (await params).taskId,
       metadata: parsed.data,
     })
 

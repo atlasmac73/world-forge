@@ -10,7 +10,7 @@ import { requireGenesisHqOwner, handleGenesisHqPermissionError } from '@/lib/gen
 import { UpdateIdeaSchema } from '@/lib/genesis-hq/validators'
 import { writeAuditLog } from '@/lib/audit/logger'
 
-export async function PATCH(req: NextRequest, { params }: { params: { ideaId: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ ideaId: string }> }) {
   try {
     const ctx = await requireGenesisHqOwner()
     const body = await req.json()
@@ -23,7 +23,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { ideaId: st
     const { data, error } = await supabase
       .from('genesis_hq_ideas')
       .update(parsed.data)
-      .eq('id', params.ideaId)
+      .eq('id', (await params).ideaId)
       .select()
       .single()
 
@@ -34,7 +34,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { ideaId: st
       user_id: ctx.userId,
       action: 'GENESIS_HQ_IDEA_UPDATED',
       resource_type: 'genesis_hq',
-      resource_id: params.ideaId,
+      resource_id: (await params).ideaId,
       metadata: parsed.data,
     })
 
@@ -44,18 +44,18 @@ export async function PATCH(req: NextRequest, { params }: { params: { ideaId: st
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { ideaId: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ ideaId: string }> }) {
   try {
     const ctx = await requireGenesisHqOwner()
     const supabase = createServiceClient()
-    const { error } = await supabase.from('genesis_hq_ideas').delete().eq('id', params.ideaId)
+    const { error } = await supabase.from('genesis_hq_ideas').delete().eq('id', (await params).ideaId)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
     await writeAuditLog({
       user_id: ctx.userId,
       action: 'GENESIS_HQ_IDEA_DELETED',
       resource_type: 'genesis_hq',
-      resource_id: params.ideaId,
+      resource_id: (await params).ideaId,
       metadata: {},
     })
 

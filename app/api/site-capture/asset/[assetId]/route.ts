@@ -17,7 +17,7 @@ export const runtime = 'nodejs'
 
 const BUCKET = 'site-captures'
 
-export async function GET(_req: Request, { params }: { params: { assetId: string } }) {
+export async function GET(_req: Request, { params }: { params: Promise<{ assetId: string }> }) {
   const { user, error: authError } = await requireUser()
   if (authError) return authError
   const { error: adminError } = await requireAdmin(user.id)
@@ -25,7 +25,7 @@ export async function GET(_req: Request, { params }: { params: { assetId: string
 
   const supabase = createServiceClient()
   const { data: asset } = await supabase
-    .from('capture_assets').select('storage_ref').eq('id', params.assetId).single()
+    .from('capture_assets').select('storage_ref').eq('id', (await params).assetId).single()
   if (!asset?.storage_ref) {
     return NextResponse.json({ ok: false, error: 'No stored file for this asset' }, { status: 404 })
   }
@@ -34,7 +34,7 @@ export async function GET(_req: Request, { params }: { params: { assetId: string
   return NextResponse.json({ ok: true, url: data.signedUrl, expires_in: 300 })
 }
 
-export async function POST(_req: Request, { params }: { params: { assetId: string } }) {
+export async function POST(_req: Request, { params }: { params: Promise<{ assetId: string }> }) {
   const { user, error: authError } = await requireUser()
   if (authError) return authError
   const { error: adminError } = await requireAdmin(user.id)
@@ -42,7 +42,7 @@ export async function POST(_req: Request, { params }: { params: { assetId: strin
 
   const supabase = createServiceClient()
   const { data: asset } = await supabase
-    .from('capture_assets').select('id, storage_ref').eq('id', params.assetId).single()
+    .from('capture_assets').select('id, storage_ref').eq('id', (await params).assetId).single()
   if (!asset?.storage_ref) {
     return NextResponse.json({ ok: false, error: 'No stored file to re-analyze' }, { status: 404 })
   }

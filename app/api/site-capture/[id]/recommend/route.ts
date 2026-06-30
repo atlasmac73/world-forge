@@ -13,7 +13,7 @@ import { recommendNextCaptures, type CaptureContext, type MeasurementSummary } f
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { user, error: authError } = await requireUser()
   if (authError) return authError
   const { error: adminError } = await requireAdmin(user.id)
@@ -21,11 +21,11 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
 
   const supabase = createServiceClient()
   const { data: capture } = await supabase
-    .from('site_captures').select('latitude, enrichment').eq('id', params.id).single()
+    .from('site_captures').select('latitude, enrichment').eq('id', (await params).id).single()
   const { data: assets } = await supabase
-    .from('capture_assets').select('latitude').eq('capture_id', params.id)
+    .from('capture_assets').select('latitude').eq('capture_id', (await params).id)
   const { data: measurements } = await supabase
-    .from('measurements').select('label, confidence, conflict, source_provenance').eq('capture_id', params.id)
+    .from('measurements').select('label, confidence, conflict, source_provenance').eq('capture_id', (await params).id)
 
   const enrichment = (capture?.enrichment ?? {}) as {
     naip?: { available?: boolean }; building?: { available?: boolean }

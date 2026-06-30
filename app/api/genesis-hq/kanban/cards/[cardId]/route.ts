@@ -10,7 +10,7 @@ import { requireGenesisHqOwner, handleGenesisHqPermissionError } from '@/lib/gen
 import { UpdateKanbanCardSchema } from '@/lib/genesis-hq/validators'
 import { writeAuditLog } from '@/lib/audit/logger'
 
-export async function PATCH(req: NextRequest, { params }: { params: { cardId: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ cardId: string }> }) {
   try {
     const ctx = await requireGenesisHqOwner()
     const body = await req.json()
@@ -23,7 +23,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { cardId: st
     const { data, error } = await supabase
       .from('genesis_hq_kanban_cards')
       .update(parsed.data)
-      .eq('id', params.cardId)
+      .eq('id', (await params).cardId)
       .select()
       .single()
 
@@ -34,7 +34,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { cardId: st
       user_id: ctx.userId,
       action: 'GENESIS_HQ_KANBAN_CARD_UPDATED',
       resource_type: 'genesis_hq',
-      resource_id: params.cardId,
+      resource_id: (await params).cardId,
       metadata: parsed.data,
     })
 
@@ -44,18 +44,18 @@ export async function PATCH(req: NextRequest, { params }: { params: { cardId: st
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { cardId: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ cardId: string }> }) {
   try {
     const ctx = await requireGenesisHqOwner()
     const supabase = createServiceClient()
-    const { error } = await supabase.from('genesis_hq_kanban_cards').delete().eq('id', params.cardId)
+    const { error } = await supabase.from('genesis_hq_kanban_cards').delete().eq('id', (await params).cardId)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
     await writeAuditLog({
       user_id: ctx.userId,
       action: 'GENESIS_HQ_KANBAN_CARD_DELETED',
       resource_type: 'genesis_hq',
-      resource_id: params.cardId,
+      resource_id: (await params).cardId,
       metadata: {},
     })
 

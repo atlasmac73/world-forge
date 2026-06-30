@@ -17,7 +17,7 @@ import { footprintEdgeObservation } from '@/lib/measurement/enrichmentConstraint
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { user, error: authError } = await requireUser()
   if (authError) return authError
   const { error: adminError } = await requireAdmin(user.id)
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   // independent constraint (so public data + a user's tape cross-check).
   const allObs: Observation[] = [...observations]
   if (body?.includeFootprintEdge) {
-    const { data: cap } = await supabase.from('site_captures').select('enrichment').eq('id', params.id).single()
+    const { data: cap } = await supabase.from('site_captures').select('enrichment').eq('id', (await params).id).single()
     const fpObs = footprintEdgeObservation((cap?.enrichment ?? {}) as Record<string, never>, unit)
     if (fpObs) allObs.push(fpObs)
   }
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
 
   const { data, error } = await supabase.from('measurements').insert({
-    capture_id: params.id,
+    capture_id: (await params).id,
     label, kind, unit,
     value: result.value,
     sigma: result.sigma,
