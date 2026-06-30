@@ -1,61 +1,62 @@
 # ATLAS v67 — Engineering Backlog (verified)
 
-Evidence-backed findings from a direct audit of the repo. Items are grouped by
-priority. Each lists concrete evidence and why it is or isn't safe to do without
-owner direction. This is a living punch list, not a plan of record.
+Evidence-backed status from a direct audit + work this session. This is a living
+punch list, not a plan of record.
 
-## Done this session (context)
-- Repo imported, extracted to root, `main` cleaned (removed `source/` dup), build green.
+## Done & shipped to main
+- Repo imported, extracted to root, `main` cleaned (removed `source/` dup).
 - `PropertyMap.tsx` exhaustive-deps lint fixed.
-- v9 prototype archived (`legacy/v9/`) + extraction report + verified reconciliation addendum.
-- `/leads` lead-pool page added on the existing `app/api/leads`, wired into Sidebar.
+- v9 prototype archived (`legacy/v9/`) + extraction report + reconciliation addendum.
+- `/leads` lead-pool page on the existing `app/api/leads`, wired into Sidebar.
+- **Pipeline made functional:** added `app/api/deals` (GET/POST/PATCH over the RLS'd
+  `deals` table, status validated) and rebuilt `app/(app)/pipeline` on that schema
+  (stages = deal status enum; moves persist with optimistic update + rollback). It
+  was always-empty and non-persisting before.
+- **Security CRITICAL cleared:** the audit critical was **vitest** (dev UI server
+  arbitrary file read/exec), not Next.js. Upgraded vitest 2→4 (156 tests still
+  pass); a vite HIGH cleared too. Audit 7→5, **0 critical**.
 - `tsconfig.tsbuildinfo` untracked + gitignored.
 
----
-
-## P0 — Core-loop bug: Pipeline board is non-functional against the backend
-**Files:** `app/(app)/pipeline/page.tsx`, `app/api/leads/route.ts`, `supabase/schema.sql`
-
-Evidence:
-- The page fetches `/api/leads?limit=100` (line ~53) but parses `data.ok || data.leads || data.data`; `GET /api/leads` returns a **bare array**, so the board is **always empty**.
-- It renders **deal**-shaped fields (`arv`, `asking_price`, `deal_grade`, `stage`) that the **leads** table doesn't have (leads has `name`, `status`, `touch_sequence`, joined `properties`).
-- Moves PATCH `/api/leads/${dealId}` (line ~74) with `{ acquisition_status }`, but there is **no `app/api/leads/[id]` route** and the leads column is `status` (CHECK: new/contacted/negotiating/closed/dead). Moves silently 404 (`.catch(() => null)`) and never persist.
-- A `deals` **table** exists (`supabase/schema.sql:83`) but there is **no `/api/deals` route**.
-
-Deeper finding: the page's UI fields (`address`, `title`, `owner_name`, `deal_grade`, `asking_price`) and stages (`new/research/contacted/negotiating/contract/closed`) match **neither** current table:
-- `deals` has `deal_name`/`purchase_price`/`arv` and status enum `prospect/analyzing/offer_made/under_contract/closed_won/closed_lost` (`supabase/schema.sql:83-101`).
-- `leads` has `name`/`status` (`new/contacted/negotiating/closed/dead`).
-
-So this is not a wire-up — it's a **redesign against a chosen schema**, which involves owner-facing product choices (stage taxonomy, which financial fields to surface). Two resolutions:
-1. **Deals pipeline:** build `app/api/deals` (GET/POST/PATCH + `[id]`), redesign the board to the `deals` schema (stages = deal status enum, fields = deal_name/purchase_price/arv/MAO/profit + joined property address).
-2. **Leads kanban:** rebuild the board on `/api/leads` (stages = lead statuses, persist via `PATCH /api/leads` with `{id, status}`).
-
-Recommendation: option 1 (richer, matches the acquisition workflow), but it's a deliberate build with design choices — **confirm the stage taxonomy/fields before starting.**
-
-## P0 — Next.js security advisories (10: 1 critical, 5 high, 4 moderate)
-**Evidence:** `npm audit` — all in `next@14.2.35` + bundled `postcss`. No 14.x patch exists; full clearance needs `next@16.2.9`.
-
-**Empirically scoped on branch `claude/atlas-nextjs-security-upgrade` (WIP, do not merge):**
-- `next@15.5.19` reduces 10 → 7 vulns (1 critical remains); `next@16.2.9` is required to clear the critical. Both accept React 18 (no forced React 19).
-- **Done on that branch:** async `params`/`searchParams` codemod across 8 API route handlers + the `counties/[name]` client page (`await params` / `React.use`). Note: this codemod is **not** backward-compatible with next@14, so it must stay off the main line.
-- **Remaining before merge:** (1) `cookies()` is async in 15/16 — make `lib/supabase/server.ts` `createClient()` async and `await` it at **every** server call site (cascade across all API routes + server components); (2) `next.config.js` has options invalid in 16; (3) resolve a `next@16` ERESOLVE peer conflict; (4) full runtime smoke test on a preview.
-
-Why not finished autonomously: the `createClient()` async cascade changes every server data path and has runtime (caching/cookie) behavior changes that require smoke testing — a dedicated effort, not a mechanical change. Do **not** run `audit fix --force` blind.
+## Verified — no action needed
+- **Admin for `atlasmac73@gmail.com`:** already has the `owner` role (top of the
+  hierarchy). `ADMIN_EMAILS`/`INVITE_SECRET` are unused env vars; admin is DB-role
+  based. Nothing to change.
 
 ---
 
-## P1 — Navigation / discoverability unification (the standing MVP gap)
-**Evidence:** `app/page.tsx` mounts the legacy SPA (`TheArkApp`) at `/`; portal nav is state-only (`store/useArkStore.ts` `activePortal`), not URL-addressable. A parallel App Router page set (`app/(app)/*`) has real URLs. The two overlap and aren't unified.
+## Owner-gated — prepared, needs a decision or a preview smoke-test
 
-Why it needs owner direction: making portals URL-addressable touches the shared SPA core across all 50 portals; CLAUDE.md §6 says **do not casually merge** the two front-end systems. Scope as an explicit, owner-approved effort.
+### Next.js framework upgrade → branch `claude/atlas-nextjs-security-upgrade`
+Remaining production advisory on `next@14`: **DoS via Image Optimizer
+`remotePatterns` + RSC HTTP request deserialization** (1 high). The other remaining
+audit items are **dev-only** (`glob` via eslint tooling, `postcss`).
 
-## P1 — Admin access for `atlasmac73@gmail.com`
-**Evidence:** `ADMIN_EMAILS` and `INVITE_SECRET` are in `.env.example` but **not referenced anywhere in code**. Admin is governed by **Supabase DB role** (migrations `promote_isaac_account`, `owner_login_role_grants_v2`).
+Branch status: **next@16.2.9, build + typecheck + 156 tests green.** Done there:
+async `params` codemod (9 files) + `cookies()`→async `createClient()` cascade
+(57 server call sites) + `next.config.js` migration (`serverExternalPackages`).
+**Remaining before merge:** (1) `next lint` was removed in Next 16 → migrate lint to
+ESLint CLI (likely eslint 9 + flat config); `npm run check` fails on this only.
+(2) `middleware`→`proxy` deprecation (still works). (3) **runtime smoke-test on a
+preview** (cookies/caching behavior changes) before merging to main.
 
-Action (needs explicit go — it's a live auth change): grant the `admin`/`owner` role to that account via SQL, audited through `audit_logs`. Setting the env var would be a no-op.
+Interim hardening option without upgrading: tighten `next.config.js`
+`images.remotePatterns` from `hostname: '**'` to specific hosts (mapbox/supabase/…)
+to shrink the Image-Optimizer DoS surface — but verify all image sources first so
+nothing breaks.
+
+### Navigation unification → scoped in `docs/NAV_UNIFICATION_SCOPE.md`
+`app/page.tsx` mounts the legacy SPA at `/`; portal nav is state-only
+(`useArkStore.activePortal`), not URL-addressable; a parallel App Router page set
+overlaps it. Recommended path: URL-sync `activePortal` (deep links/back-button) +
+de-dupe MVP features to one canonical surface. **Not built** because it touches the
+shared 47-portal SPA core (CLAUDE.md §6: don't casually merge), can't be runtime-
+tested here, and has 3 open product questions (URL shape, canonical surface, scope).
 
 ---
 
 ## P2 — Cleanup (low risk, optional)
-- **Leftover archives at repo root:** `ATLAS_V20_AUTOPOIETIC.zip`, `atlas-genesis-integration-packet.zip`, `atlasv22genesishq.zip` (~1.1 MB) + `Pasted text(21).txt`. Harmless to deploy. Removal is optional; `atlas-genesis-integration-packet.zip` may relate to the Genesis packet (CLAUDE.md docs/genesis) — confirm before deleting.
-- **Loose API-response parsing pattern:** several client pages assume wrapped shapes (`data.leads`/`data.data`) while APIs return bare arrays. Normalize per-page when touched (the new `/leads` page already tolerates both).
+- **Leftover archives at repo root:** 3 `.zip` files (~1.1 MB) + `Pasted text(21).txt`.
+  Harmless to deploy. `atlas-genesis-integration-packet.zip` may relate to the
+  Genesis packet — confirm before deleting.
+- **Loose API-response parsing** in some client pages (assume `data.leads`/`data.data`
+  vs the APIs' bare arrays). Normalize per-page when touched.
