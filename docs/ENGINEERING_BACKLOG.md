@@ -22,11 +22,15 @@ Evidence:
 - Moves PATCH `/api/leads/${dealId}` (line ~74) with `{ acquisition_status }`, but there is **no `app/api/leads/[id]` route** and the leads column is `status` (CHECK: new/contacted/negotiating/closed/dead). Moves silently 404 (`.catch(() => null)`) and never persist.
 - A `deals` **table** exists (`supabase/schema.sql:83`) but there is **no `/api/deals` route**.
 
-Why it needs owner direction (not auto-fixed): two valid resolutions with different product meaning —
-1. **Deals pipeline:** build `app/api/deals` (GET/POST/PATCH, with `[id]`) + wire the board to it (matches the deal-shaped UI already written).
-2. **Leads kanban:** rework the board to a true leads board on the existing `/api/leads` (stages = lead statuses, persist via `PATCH /api/leads` with `{id, status}`).
+Deeper finding: the page's UI fields (`address`, `title`, `owner_name`, `deal_grade`, `asking_price`) and stages (`new/research/contacted/negotiating/contract/closed`) match **neither** current table:
+- `deals` has `deal_name`/`purchase_price`/`arv` and status enum `prospect/analyzing/offer_made/under_contract/closed_won/closed_lost` (`supabase/schema.sql:83-101`).
+- `leads` has `name`/`status` (`new/contacted/negotiating/closed/dead`).
 
-Recommendation: option 1 (the UI is already deal-shaped; least UI churn), but it's a real build — confirm before starting.
+So this is not a wire-up — it's a **redesign against a chosen schema**, which involves owner-facing product choices (stage taxonomy, which financial fields to surface). Two resolutions:
+1. **Deals pipeline:** build `app/api/deals` (GET/POST/PATCH + `[id]`), redesign the board to the `deals` schema (stages = deal status enum, fields = deal_name/purchase_price/arv/MAO/profit + joined property address).
+2. **Leads kanban:** rebuild the board on `/api/leads` (stages = lead statuses, persist via `PATCH /api/leads` with `{id, status}`).
+
+Recommendation: option 1 (richer, matches the acquisition workflow), but it's a deliberate build with design choices — **confirm the stage taxonomy/fields before starting.**
 
 ## P0 — Next.js security advisories (10: 1 critical, 5 high, 4 moderate)
 **Evidence:** `npm audit` — all in `next@14.2.35` + bundled `postcss`; the only listed fix is `npm audit fix --force` → **`next@16.2.9` (major, breaking)**.
