@@ -1,0 +1,1877 @@
+
+import { useState, useRef, useEffect, useCallback } from "react";
+
+
+
+// ─────────────────────────────────────────────
+
+//  DATA
+
+// ─────────────────────────────────────────────
+
+
+
+const PHASES = [
+
+  {
+
+    id: "p1", label: "PHASE 1", title: "FOUNDATION & PROTECTION", color: "#00f5c4",
+
+    status: "active", eta: "Weeks 1–4",
+
+    areas: [
+
+      {
+
+        id: "a1", title: "IP & Patent Defensive Moat", icon: "🛡️",
+
+        tasks: [
+
+          { id: "t1", text: "File provisional patents for Genesis Engine ingestion system", done: false, priority: "critical" },
+
+          { id: "t2", text: "Document all novel algorithms with timestamps (git + notarization)", done: false, priority: "critical" },
+
+          { id: "t3", text: "Trademark: Genesis Engine, TransMedia Engine, brand names", done: false, priority: "high" },
+
+          { id: "t4", text: "File trade secret protocols for proprietary AI pipelines", done: false, priority: "high" },
+
+          { id: "t5", text: "Create defensive publication disclosures for 100 ideas", done: false, priority: "medium" },
+
+          { id: "t6", text: "Engage IP attorney for freedom-to-operate analysis", done: false, priority: "high" },
+
+          { id: "t7", text: "Copyright all written works, books, transmedia content", done: false, priority: "medium" },
+
+        ]
+
+      },
+
+      {
+
+        id: "a2", title: "Architecture Unification", icon: "🏗️",
+
+        tasks: [
+
+          { id: "t8", text: "Audit all 4 apps — map overlapping features and data models", done: false, priority: "critical" },
+
+          { id: "t9", text: "Define unified API layer / microservice schema", done: false, priority: "critical" },
+
+          { id: "t10", text: "Choose monorepo structure (Turborepo / Nx)", done: false, priority: "high" },
+
+          { id: "t11", text: "Migrate all GitHub repos under one org with access controls", done: false, priority: "high" },
+
+          { id: "t12", text: "Set up Vercel project matrix with env separation", done: false, priority: "medium" },
+
+        ]
+
+      },
+
+    ]
+
+  },
+
+  {
+
+    id: "p2", label: "PHASE 2", title: "CORE ENGINE BUILD", color: "#ff6b35",
+
+    status: "planned", eta: "Weeks 5–12",
+
+    areas: [
+
+      {
+
+        id: "a3", title: "Genesis Engine (Universal Ingestion)", icon: "⚡",
+
+        tasks: [
+
+          { id: "t13", text: "Build universal content parser (PDF, video, audio, web, docs)", done: false, priority: "critical" },
+
+          { id: "t14", text: "Connect Google Drive API bidirectional sync", done: false, priority: "critical" },
+
+          { id: "t15", text: "Build YouTube transcript + metadata extractor", done: false, priority: "high" },
+
+          { id: "t16", text: "Connect Gmail, Google Calendar as context sources", done: false, priority: "high" },
+
+          { id: "t17", text: "Build ChatGPT / Claude / Gemini chat history importer", done: false, priority: "high" },
+
+          { id: "t18", text: "GitHub repo code ingestion + semantic indexing", done: false, priority: "medium" },
+
+          { id: "t19", text: "Google Notebook export bridge", done: false, priority: "medium" },
+
+          { id: "t20", text: "Build privacy firewall — user controls all data sharing", done: false, priority: "critical" },
+
+          { id: "t21", text: "Local-first encrypted data vault (user owns their data)", done: false, priority: "critical" },
+
+        ]
+
+      },
+
+      {
+
+        id: "a4", title: "TransMedia Generation Engine", icon: "🎬",
+
+        tasks: [
+
+          { id: "t22", text: "Input-to-output transformer (any format → any format)", done: false, priority: "critical" },
+
+          { id: "t23", text: "PDF/Guide/Roadmap generator pipeline", done: false, priority: "high" },
+
+          { id: "t24", text: "Slideshow/presentation auto-generator", done: false, priority: "high" },
+
+          { id: "t25", text: "Podcast script + audio generation pipeline", done: false, priority: "high" },
+
+          { id: "t26", text: "YouTube video script + storyboard generator", done: false, priority: "medium" },
+
+          { id: "t27", text: "Audiobook creator from any source material", done: false, priority: "medium" },
+
+          { id: "t28", text: "Interactive mind map auto-generator from content", done: false, priority: "medium" },
+
+          { id: "t29", text: "Spreadsheet + data viz auto-generator", done: false, priority: "medium" },
+
+        ]
+
+      },
+
+    ]
+
+  },
+
+  {
+
+    id: "p3", label: "PHASE 3", title: "APP UNIFICATION", color: "#a855f7",
+
+    status: "planned", eta: "Weeks 13–20",
+
+    areas: [
+
+      {
+
+        id: "a5", title: "Four Apps → One Super App", icon: "🔮",
+
+        tasks: [
+
+          { id: "t30", text: "Unified authentication system (SSO across all apps)", done: false, priority: "critical" },
+
+          { id: "t31", text: "Shared component library across all 4 apps", done: false, priority: "high" },
+
+          { id: "t32", text: "Unified dashboard / command center UI", done: false, priority: "critical" },
+
+          { id: "t33", text: "Cross-app data sharing layer", done: false, priority: "high" },
+
+          { id: "t34", text: "App 1: Complete remaining features + test", done: false, priority: "high" },
+
+          { id: "t35", text: "App 2: Complete remaining features + test", done: false, priority: "high" },
+
+          { id: "t36", text: "App 3: Complete remaining features + test", done: false, priority: "high" },
+
+          { id: "t37", text: "App 4: Complete remaining features + test", done: false, priority: "high" },
+
+          { id: "t38", text: "Merge all 4 apps into unified navigation shell", done: false, priority: "critical" },
+
+        ]
+
+      },
+
+    ]
+
+  },
+
+  {
+
+    id: "p4", label: "PHASE 4", title: "BETA LAUNCH", color: "#facc15",
+
+    status: "planned", eta: "Weeks 21–28",
+
+    areas: [
+
+      {
+
+        id: "a6", title: "Beta Test Program", icon: "🚀",
+
+        tasks: [
+
+          { id: "t39", text: "Build waitlist landing page with NDA capture", done: false, priority: "critical" },
+
+          { id: "t40", text: "Define 50-user closed beta cohort criteria", done: false, priority: "high" },
+
+          { id: "t41", text: "Set up beta feedback system (in-app + surveys)", done: false, priority: "high" },
+
+          { id: "t42", text: "Create onboarding flow for beta users", done: false, priority: "high" },
+
+          { id: "t43", text: "Set up analytics (privacy-respecting) for beta", done: false, priority: "medium" },
+
+          { id: "t44", text: "Recruit beta users from trusted network first", done: false, priority: "high" },
+
+          { id: "t45", text: "Week 1 beta: 10 users, collect daily feedback", done: false, priority: "high" },
+
+          { id: "t46", text: "Week 2-4 beta: expand to 50 users", done: false, priority: "medium" },
+
+          { id: "t47", text: "Beta retrospective + feature prioritization", done: false, priority: "medium" },
+
+        ]
+
+      },
+
+      {
+
+        id: "a7", title: "Books & TransMedia Content", icon: "📚",
+
+        tasks: [
+
+          { id: "t48", text: "Finalize book 1 outline using Genesis Engine", done: false, priority: "high" },
+
+          { id: "t49", text: "Create transmedia content bible", done: false, priority: "medium" },
+
+          { id: "t50", text: "Publish first chapter as lead magnet", done: false, priority: "medium" },
+
+          { id: "t51", text: "Build companion app experience for books", done: false, priority: "low" },
+
+        ]
+
+      },
+
+    ]
+
+  },
+
+  {
+
+    id: "p5", label: "PHASE 5", title: "SCALE & MONETIZE", color: "#ec4899",
+
+    status: "future", eta: "Months 7–12",
+
+    areas: [
+
+      {
+
+        id: "a8", title: "Revenue & Protection Moat", icon: "💎",
+
+        tasks: [
+
+          { id: "t52", text: "Launch tiered subscription model", done: false, priority: "high" },
+
+          { id: "t53", text: "Utility patents filed for core novel innovations", done: false, priority: "critical" },
+
+          { id: "t54", text: "Developer API + marketplace launch", done: false, priority: "high" },
+
+          { id: "t55", text: "Partnership/licensing deals", done: false, priority: "medium" },
+
+          { id: "t56", text: "Series A fundraise prep", done: false, priority: "medium" },
+
+        ]
+
+      },
+
+    ]
+
+  },
+
+];
+
+
+
+const KANBAN_COLS = [
+
+  { id: "backlog", label: "⬜ BACKLOG", color: "#444" },
+
+  { id: "inprogress", label: "🔵 IN PROGRESS", color: "#3b82f6" },
+
+  { id: "review", label: "🟡 REVIEW", color: "#facc15" },
+
+  { id: "done", label: "🟢 DONE", color: "#00f5c4" },
+
+];
+
+
+
+const initKanban = () => {
+
+  const cards = [];
+
+  PHASES.forEach(phase => {
+
+    phase.areas.forEach(area => {
+
+      area.tasks.forEach(task => {
+
+        cards.push({
+
+          id: task.id, text: task.text, priority: task.priority,
+
+          col: "backlog", phase: phase.label, area: area.title,
+
+          color: phase.color,
+
+        });
+
+      });
+
+    });
+
+  });
+
+  return cards;
+
+};
+
+
+
+const IDEAS_100 = [
+
+  // Universal Content Capture (1-20)
+
+  { id: 1, cat: "CAPTURE", title: "Ambient Context Harvester", desc: "Browser extension that passively indexes all pages visited (locally) and makes them searchable within your system — zero data leaving your device.", patent: "Local-first semantic indexing with user-controlled purge controls" },
+
+  { id: 2, cat: "CAPTURE", title: "Universal Clipboard Intelligence", desc: "Anything copied to clipboard is auto-tagged, categorized, and stored in your personal knowledge vault.", patent: "Cross-app clipboard semantic classification engine" },
+
+  { id: 3, cat: "CAPTURE", title: "Screen-to-Knowledge Recorder", desc: "Screen recording AI that watches what you're working on, extracts key information, and auto-creates structured notes.", patent: "Real-time visual context extraction from screen activity" },
+
+  { id: 4, cat: "CAPTURE", title: "Voice-to-Everything Pipeline", desc: "Record voice memos anywhere → auto-transcribe → classify → route to the correct project/context.", patent: "Contextual voice memo routing with project affinity scoring" },
+
+  { id: 5, cat: "CAPTURE", title: "Email Intelligence Extractor", desc: "AI reads your email threads and extracts decisions, action items, and knowledge into your vault without storing raw emails.", patent: "Privacy-preserving email knowledge distillation (summaries not originals)" },
+
+  { id: 6, cat: "CAPTURE", title: "Cross-Platform Chat Harvester", desc: "Import conversations from ChatGPT, Claude, Gemini, DeepSeek into unified timeline with semantic search.", patent: "Multi-LLM conversation unification protocol with session bridging" },
+
+  { id: 7, cat: "CAPTURE", title: "YouTube Deep Extractor", desc: "Beyond transcripts — extracts concepts, timestamps, speakers, visual elements described, and creates mind maps from any video.", patent: "Multi-modal video knowledge graph extraction system" },
+
+  { id: 8, cat: "CAPTURE", title: "PDF Semantic Splitter", desc: "Automatically splits PDFs into concept chunks, links related chunks across different documents.", patent: "Cross-document semantic fragment linking engine" },
+
+  { id: 9, cat: "CAPTURE", title: "Phone Screen Mirror Sync", desc: "Opt-in phone app that syncs notes, voice memos, photos of whiteboards directly to your command center.", patent: "Consent-gated mobile-to-vault synchronization with local processing" },
+
+  { id: 10, cat: "CAPTURE", title: "Social Listening Vault", desc: "Capture your own posts, comments, threads across platforms into a searchable personal media archive.", patent: "User-owned social content archiving with platform-agnostic export" },
+
+  { id: 11, cat: "CAPTURE", title: "Book Highlight Aggregator", desc: "Imports Kindle highlights, Readwise notes, physical book photos into a unified reading knowledge base.", patent: "Multi-source reading annotation unification with concept mapping" },
+
+  { id: 12, cat: "CAPTURE", title: "Meeting Intelligence Recorder", desc: "Joins Zoom/Meet/Teams with permission, extracts decisions and action items only — never stores full recording.", patent: "Meeting decision extraction with privacy-by-design architecture" },
+
+  { id: 13, cat: "CAPTURE", title: "GitHub Project Contextualizer", desc: "Reads your repos, commit history, README files and builds a semantic map of your technical projects.", patent: "Source code project knowledge graph with intent extraction" },
+
+  { id: 14, cat: "CAPTURE", title: "Podcast Knowledge Miner", desc: "Subscribe to podcasts; AI extracts and indexes key ideas, quotes, and concepts episode by episode.", patent: "Continuous podcast knowledge extraction subscription service" },
+
+  { id: 15, cat: "CAPTURE", title: "Website Snapshot Vault", desc: "Save any webpage with AI summary, semantic tags, and visual snapshot — owned by you, not a third party.", patent: "Self-hosted web archiving with AI semantic annotation layer" },
+
+  { id: 16, cat: "CAPTURE", title: "Spreadsheet Story Extractor", desc: "Upload any spreadsheet and AI extracts the narrative, trends, and insights as readable documents.", patent: "Tabular data narrative extraction with trend story generation" },
+
+  { id: 17, cat: "CAPTURE", title: "Presentation DNA Extractor", desc: "Upload any PowerPoint/slides and extract the core ideas, structure, and talking points as editable outlines.", patent: "Slide-to-outline semantic structure extraction protocol" },
+
+  { id: 18, cat: "CAPTURE", title: "Image Context Vault", desc: "Upload photos and AI extracts text, objects, people (with consent), locations, and links to relevant projects.", patent: "Multi-modal image context extraction with project routing" },
+
+  { id: 19, cat: "CAPTURE", title: "Calendar Context Engine", desc: "AI reads calendar events to understand your timeline, deadlines, and goals and surfaces relevant content proactively.", patent: "Calendar-aware proactive knowledge surface system" },
+
+  { id: 20, cat: "CAPTURE", title: "Jenni/Notion/Obsidian Bridge", desc: "Universal connector for writing/PKM tools — imports notes, documents, databases in real time.", patent: "PKM-agnostic bidirectional sync protocol with conflict resolution" },
+
+
+
+  // AI Generation (21-40)
+
+  { id: 21, cat: "GENERATE", title: "Any-to-Any Content Transformer", desc: "The core Genesis Engine: feed any content in any format, specify output format, get perfect output.", patent: "Format-agnostic AI content transformation with fidelity scoring" },
+
+  { id: 22, cat: "GENERATE", title: "Transmedia Bible Generator", desc: "From one core idea, auto-generate a complete transmedia universe: book, podcast, video, game, course.", patent: "Transmedia universe expansion engine with cross-format consistency" },
+
+  { id: 23, cat: "GENERATE", title: "Personalized Audiobook Creator", desc: "Turn any document collection into a narrated audiobook with chapter breaks and custom voice.", patent: "Personal knowledge audiobook synthesis with dynamic narration" },
+
+  { id: 24, cat: "GENERATE", title: "Auto-Documentary Creator", desc: "Feed research + notes → AI assembles a narrated video documentary with stock visuals.", patent: "AI documentary assembly pipeline from unstructured research" },
+
+  { id: 25, cat: "GENERATE", title: "Interactive Course Builder", desc: "Upload any expertise source → AI creates full course with modules, quizzes, exercises, certificates.", patent: "Expertise-to-curriculum automated instructional design system" },
+
+  { id: 26, cat: "GENERATE", title: "Personal Brand Amplifier", desc: "Takes your ideas and auto-creates a week of social content, email newsletter, and blog posts.", patent: "Unified personal brand content multiplication engine" },
+
+  { id: 27, cat: "GENERATE", title: "Patent Draft Generator", desc: "Describe your invention in plain language → AI generates provisional patent draft with claims.", patent: "Natural language to patent claim structure generator" },
+
+  { id: 28, cat: "GENERATE", title: "Business Plan Auto-Writer", desc: "Feed your notes, ideas, market research → AI writes a full investor-ready business plan.", patent: "Contextual business plan synthesis from unstructured founder notes" },
+
+  { id: 29, cat: "GENERATE", title: "Game Narrative Engine", desc: "Turn any IP or story into an interactive text/visual game with branching narrative.", patent: "IP-to-interactive-narrative conversion engine with branching logic" },
+
+  { id: 30, cat: "GENERATE", title: "Podcast Season Generator", desc: "From a topic and notes, generate a full podcast season: episode outlines, scripts, show notes.", patent: "Long-form podcast season planning and scripting AI system" },
+
+  { id: 31, cat: "GENERATE", title: "Mind Map Exploder", desc: "Type one idea → AI generates a fully populated mind map with 5 levels of sub-concepts.", patent: "Recursive concept expansion mind map generation algorithm" },
+
+  { id: 32, cat: "GENERATE", title: "Research-to-Report Pipeline", desc: "Paste URLs, PDFs, notes → AI generates a formatted research report with citations.", patent: "Multi-source research synthesis with automated citation mapping" },
+
+  { id: 33, cat: "GENERATE", title: "Website Clone-to-Customize", desc: "Describe a website you like → AI generates a fully customized version for your brand.", patent: "Inspiration-based website generation with brand personalization" },
+
+  { id: 34, cat: "GENERATE", title: "Legal Agreement Drafts", desc: "Describe a business deal in plain English → AI generates first draft of relevant agreements.", patent: "Natural language to legal instrument first-draft generation system" },
+
+  { id: 35, cat: "GENERATE", title: "Children's Book Creator", desc: "Any story idea → illustrated children's book with AI-generated text + imagery suggestions.", patent: "Narrative-to-children's-book formatting and illustration pipeline" },
+
+  { id: 36, cat: "GENERATE", title: "Academic Paper Formatter", desc: "Upload research notes → AI formats into a proper academic paper with abstract, citations, sections.", patent: "Academic paper synthesis with style-guide compliance engine" },
+
+  { id: 37, cat: "GENERATE", title: "Investor Deck Assembler", desc: "From any business notes, generate a polished pitch deck with story arc and financial slides.", patent: "Investor narrative pitch deck assembly from unstructured business context" },
+
+  { id: 38, cat: "GENERATE", title: "Song Lyric & Melody Suggester", desc: "Describe a feeling, theme, or topic → AI generates song lyrics with suggested chord progressions.", patent: "Theme-to-song composition assistant with emotional mapping" },
+
+  { id: 39, cat: "GENERATE", title: "Spreadsheet Formula Builder", desc: "Describe what you want a spreadsheet to do in English → AI builds it with formulas.", patent: "Natural language spreadsheet formula and structure generation" },
+
+  { id: 40, cat: "GENERATE", title: "Movie Pitch Generator", desc: "From any IP, story, or concept → full movie pitch with logline, synopsis, character sheets.", patent: "IP-to-film pitch synthesis with genre and market analysis" },
+
+
+
+  // Privacy & Ownership (41-60)
+
+  { id: 41, cat: "PRIVACY", title: "Zero-Knowledge Vault", desc: "All user data encrypted locally before syncing — server never sees plaintext. User holds the only key.", patent: "Client-side encryption with user-sovereign key management for AI systems" },
+
+  { id: 42, cat: "PRIVACY", title: "Data Dividend System", desc: "When users choose to share data with AI training, they receive micropayments or platform credits.", patent: "User data monetization with opt-in consent and compensation protocol" },
+
+  { id: 43, cat: "PRIVACY", title: "Consent Firewall Layer", desc: "Every data connection requires explicit per-source consent that can be revoked at any time.", patent: "Granular per-source consent management with instant revocation" },
+
+  { id: 44, cat: "PRIVACY", title: "Personal AI That Forgets", desc: "Users can set expiration dates on any data — after which even the system cannot access it.", patent: "Temporal data expiration with cryptographic deletion verification" },
+
+  { id: 45, cat: "PRIVACY", title: "Shadow Profile Detector", desc: "AI scans for places where your data has been collected without your knowledge and alerts you.", patent: "Cross-platform shadow profile detection and user notification system" },
+
+  { id: 46, cat: "PRIVACY", title: "Local-Only Processing Mode", desc: "Run AI models entirely on-device — no data ever leaves the user's hardware.", patent: "On-device AI inference pipeline with zero network data transmission" },
+
+  { id: 47, cat: "PRIVACY", title: "Federated Personal AI", desc: "Your AI model trains only on your data, on your device, and stays yours.", patent: "Federated personal AI training with on-device model ownership" },
+
+  { id: 48, cat: "PRIVACY", title: "AI Audit Trail", desc: "Every AI operation on your data creates a transparent, auditable log that only you can see.", patent: "User-sovereign AI operation audit log with tamper-proof storage" },
+
+  { id: 49, cat: "PRIVACY", title: "Anti-Scrape Shield", desc: "System detects and blocks unauthorized attempts to scrape or exfiltrate user content.", patent: "Real-time unauthorized content exfiltration detection and blocking" },
+
+  { id: 50, cat: "PRIVACY", title: "Decentralized Identity Layer", desc: "Users control their identity across all connected platforms without centralized auth.", patent: "Decentralized identity management for AI platform federation" },
+
+  { id: 51, cat: "PRIVACY", title: "Terms-of-Service AI Analyzer", desc: "Before connecting any tool, AI explains in plain language exactly what data access you're granting.", patent: "Natural language TOS risk scoring with visual consent interface" },
+
+  { id: 52, cat: "PRIVACY", title: "Pseudonymization Engine", desc: "Automatically replaces personally identifiable information before any data is processed by AI.", patent: "Real-time PII pseudonymization for AI processing pipelines" },
+
+  { id: 53, cat: "PRIVACY", title: "Right-to-Erasure Enforcer", desc: "One-click deletion that propagates to all connected systems and verifies deletion.", patent: "Cross-platform right-to-erasure enforcement with deletion verification" },
+
+  { id: 54, cat: "PRIVACY", title: "Surveillance Capitalism Blocker", desc: "Detects and blocks advertising trackers that attempt to profile users through AI platforms.", patent: "AI platform ad-tracking detection and neutralization system" },
+
+  { id: 55, cat: "PRIVACY", title: "Open Source AI Core", desc: "Core AI models are open source so users can verify they're not being manipulated.", patent: "Open-source AI core with proprietary privacy enhancement layer" },
+
+  { id: 56, cat: "PRIVACY", title: "Data Portability Passport", desc: "Export ALL your data from any platform in any format with one click.", patent: "Universal data portability passport with cross-platform export" },
+
+  { id: 57, cat: "PRIVACY", title: "AI Bias Detector", desc: "Analyzes AI outputs for political, commercial, or ideological bias and flags it to the user.", patent: "Real-time AI output bias detection and flagging system" },
+
+  { id: 58, cat: "PRIVACY", title: "Corporate Watchdog Mode", desc: "Monitors AI platforms you use for policy changes that affect your data rights and alerts you.", patent: "AI platform policy change monitoring and user rights alert system" },
+
+  { id: 59, cat: "PRIVACY", title: "Encrypted Collaboration Layer", desc: "Share content with collaborators without ever exposing raw data to the platform.", patent: "End-to-end encrypted collaborative AI workspace protocol" },
+
+  { id: 60, cat: "PRIVACY", title: "People's AI Cooperative", desc: "Users collectively own the AI model — governance, revenue, and direction decided by members.", patent: "Cooperative AI ownership structure with DAO governance integration" },
+
+
+
+  // Platform & Connectors (61-80)
+
+  { id: 61, cat: "CONNECT", title: "Natural Language Connector", desc: "Connect any new tool just by describing it: 'Connect my Notion workspace' — AI handles auth and setup.", patent: "NLP-driven API connector bootstrapping with zero-code configuration" },
+
+  { id: 62, cat: "CONNECT", title: "Universal Webhook Intelligence", desc: "Any app that supports webhooks can send data to Genesis Engine for processing.", patent: "Universal webhook-to-AI-pipeline routing with semantic classification" },
+
+  { id: 63, cat: "CONNECT", title: "Browser-as-Source", desc: "Any website you visit can be captured as a source with one click, regardless of whether it has an API.", patent: "Consent-gated browser-level content capture without API dependency" },
+
+  { id: 64, cat: "CONNECT", title: "IFTTT/Zapier Replacement", desc: "Build any automation with natural language: 'When I get an email about X, add to my Y project.'", patent: "Natural language automation rule engine with AI trigger classification" },
+
+  { id: 65, cat: "CONNECT", title: "Phone as Universal Remote", desc: "Capture anything from your phone: photo, voice, screen — routes to the right project automatically.", patent: "Mobile-to-project intelligent routing with context-aware classification" },
+
+  { id: 66, cat: "CONNECT", title: "API Reverse Engineer", desc: "Point the system at any website; AI figures out the API structure and builds a connector.", patent: "Automated API discovery and connector synthesis from website analysis" },
+
+  { id: 67, cat: "CONNECT", title: "File System Watcher", desc: "Watch any folder on your computer — new files are auto-indexed and classified.", patent: "Intelligent local filesystem monitoring with AI-powered auto-indexing" },
+
+  { id: 68, cat: "CONNECT", title: "Cloud Storage Unifier", desc: "Connect Google Drive, Dropbox, OneDrive, iCloud — search all from one place.", patent: "Multi-cloud storage federation with unified semantic search layer" },
+
+  { id: 69, cat: "CONNECT", title: "Smart QR Capture", desc: "Print QR codes that, when scanned, automatically add content to a specific project.", patent: "QR-code-triggered content routing to AI knowledge vault" },
+
+  { id: 70, cat: "CONNECT", title: "Wearable Context Feed", desc: "Apple Watch / Fitbit can capture voice notes, location context, and activity data.", patent: "Wearable device context streaming with AI knowledge enrichment" },
+
+  { id: 71, cat: "CONNECT", title: "TV/Streaming Capture", desc: "Note a movie, show, or documentary you're watching; AI adds context about it to your vault.", patent: "Streaming content identifier with automated knowledge vault enrichment" },
+
+  { id: 72, cat: "CONNECT", title: "Physical-to-Digital Bridge", desc: "Scan any physical document, receipt, whiteboard, sticky note — AI parses and files it.", patent: "Physical document AI extraction with contextual digital filing" },
+
+  { id: 73, cat: "CONNECT", title: "Social Graph Importer", desc: "Understand your network — import connections, their interests, and collaboration potential.", patent: "Privacy-preserving social graph analysis for opportunity discovery" },
+
+  { id: 74, cat: "CONNECT", title: "Public Data Harvester", desc: "Pull in public datasets, government data, research papers relevant to your projects.", patent: "Contextual public data discovery and relevance-ranking for personal projects" },
+
+  { id: 75, cat: "CONNECT", title: "RSS Intelligence Feed", desc: "Subscribe to any RSS feed; AI filters and delivers only what's relevant to your current projects.", patent: "Project-aware RSS filtering with semantic relevance scoring" },
+
+  { id: 76, cat: "CONNECT", title: "WordPress/Ghost Publisher Bridge", desc: "Create content in Genesis Engine and publish directly to your blog with formatting.", patent: "AI content system to CMS publishing bridge with format translation" },
+
+  { id: 77, cat: "CONNECT", title: "SMS/WhatsApp Capture", desc: "Text a number to add a quick note or idea to your vault from anywhere.", patent: "SMS/messaging-as-input for AI knowledge vault with NLP classification" },
+
+  { id: 78, cat: "CONNECT", title: "Code Comment Extractor", desc: "Extract and index all comments, documentation, and TODOs from codebases as knowledge.", patent: "Source code annotation extraction and knowledge base integration" },
+
+  { id: 79, cat: "CONNECT", title: "Event Capture Widget", desc: "One embed code that can be added to any website to capture leads, feedback, or content.", patent: "Universal embeddable content capture widget with AI routing" },
+
+  { id: 80, cat: "CONNECT", title: "Marketplace of Connectors", desc: "Community-built connectors for any platform — users can sell/share their integrations.", patent: "Decentralized connector marketplace with revenue sharing protocol" },
+
+
+
+  // Defensive Moat & Novel Innovations (81-100)
+
+  { id: 81, cat: "PATENT", title: "Intent Graph Engine", desc: "AI that learns the user's long-term goals and surfaces content/actions proactively based on intent.", patent: "Long-term user intent modeling with proactive knowledge surfacing" },
+
+  { id: 82, cat: "PATENT", title: "Serendipity Engine", desc: "Randomly surfaces forgotten or unconnected knowledge pieces that might spark new ideas.", patent: "Stochastic knowledge resurrection for creative serendipity generation" },
+
+  { id: 83, cat: "PATENT", title: "Idea Collision Detector", desc: "Finds when two of your separate ideas could be combined into something more powerful.", patent: "Cross-project concept collision detection with opportunity scoring" },
+
+  { id: 84, cat: "PATENT", title: "Expertise Fingerprint", desc: "AI builds a map of what you uniquely know that most people don't — your expertise fingerprint.", patent: "Unique expertise domain mapping through knowledge vault analysis" },
+
+  { id: 85, cat: "PATENT", title: "Content Age Detector", desc: "Flags any content in your vault that is outdated and suggests what needs updating.", patent: "Knowledge freshness scoring with proactive update recommendation" },
+
+  { id: 86, cat: "PATENT", title: "Gap Analysis Engine", desc: "Analyzes your knowledge on a topic and tells you exactly what you're missing to achieve a goal.", patent: "Knowledge gap identification relative to goal-achievement requirements" },
+
+  { id: 87, cat: "PATENT", title: "Competitor Intelligence Moat", desc: "Monitors competitors' public output and surfaces when they move into your IP territory.", patent: "Public competitor activity monitoring with IP territory alert system" },
+
+  { id: 88, cat: "PATENT", title: "Proof-of-Creation Blockchain", desc: "Every piece of content created gets a blockchain timestamp proving you created it first.", patent: "Decentralized proof-of-creation registry for digital intellectual property" },
+
+  { id: 89, cat: "PATENT", title: "AI Ghostwriter with Voice", desc: "AI learns your exact writing voice from samples and writes in your voice across all formats.", patent: "Personal writing voice modeling and cross-format content generation" },
+
+  { id: 90, cat: "PATENT", title: "Context Window Memory", desc: "AI maintains long-term context across sessions using your vault — remembers everything you told it.", patent: "Persistent cross-session AI context maintenance using personal knowledge vault" },
+
+  { id: 91, cat: "PATENT", title: "Collaborative AI Co-Pilot", desc: "Multiple users can work in a shared AI workspace where the AI serves all of them simultaneously.", patent: "Multi-user shared AI workspace with individualized context management" },
+
+  { id: 92, cat: "PATENT", title: "Skill Stacking Recommender", desc: "Analyzes your goals and existing skills, recommends the exact next skill to learn for maximum leverage.", patent: "Goal-relative skill gap analysis with learning path optimization" },
+
+  { id: 93, cat: "PATENT", title: "Revenue Path Generator", desc: "AI analyzes your knowledge vault and suggests specific monetization paths for your expertise.", patent: "Expertise monetization path discovery engine with market fit scoring" },
+
+  { id: 94, cat: "PATENT", title: "Anti-Plagiarism Creator Shield", desc: "Before publishing anything, AI checks if content is too similar to existing published work.", patent: "Pre-publication originality verification system with similarity scoring" },
+
+  { id: 95, cat: "PATENT", title: "Dynamic NDA Generator", desc: "Before sharing any content externally, auto-generate a custom NDA scoped to that content.", patent: "Content-aware dynamic NDA generation with scope limiting" },
+
+  { id: 96, cat: "PATENT", title: "People's Patent Pool", desc: "Community of independent inventors shares defensive patents to block corporate IP theft.", patent: "Cooperative defensive patent pool protocol for independent inventors" },
+
+  { id: 97, cat: "PATENT", title: "AI Output Watermarker", desc: "Every piece of AI-generated content gets an invisible watermark proving your system created it.", patent: "Invisible watermarking for AI-generated content with proof-of-origin" },
+
+  { id: 98, cat: "PATENT", title: "Trillion Dollar Idea Scorer", desc: "AI analyzes your ideas against market size, timing, competition, and your unique position to score potential.", patent: "Multi-variable idea potential scoring with personal leverage analysis" },
+
+  { id: 99, cat: "PATENT", title: "Legacy Vault", desc: "Time-locked content vault — release your knowledge, books, IP on a schedule you set, even posthumously.", patent: "Time-locked digital legacy content release system with posthumous scheduling" },
+
+  { id: 100, cat: "PATENT", title: "The People's OS for AI", desc: "An open operating system layer that sits between users and any AI — giving users full control, visibility, and ownership of every interaction.", patent: "User-sovereign AI interaction operating system with transparency and control layer" },
+
+];
+
+
+
+const IDEA_CATS = ["ALL", "CAPTURE", "GENERATE", "PRIVACY", "CONNECT", "PATENT"];
+
+const CAT_COLORS = { CAPTURE: "#00f5c4", GENERATE: "#ff6b35", PRIVACY: "#a855f7", CONNECT: "#3b82f6", PATENT: "#facc15" };
+
+
+
+const MINDMAP_NODES = [
+
+  { id: "root", label: "GENESIS\nCOMMAND", x: 500, y: 340, r: 52, color: "#00f5c4", parent: null, textColor: "#000" },
+
+  { id: "n1", label: "CAPTURE", x: 240, y: 160, r: 38, color: "#00f5c4", parent: "root", textColor: "#000" },
+
+  { id: "n2", label: "GENERATE", x: 760, y: 160, r: 38, color: "#ff6b35", parent: "root", textColor: "#fff" },
+
+  { id: "n3", label: "PRIVACY", x: 180, y: 400, r: 38, color: "#a855f7", parent: "root", textColor: "#fff" },
+
+  { id: "n4", label: "CONNECT", x: 820, y: 400, r: 38, color: "#3b82f6", parent: "root", textColor: "#fff" },
+
+  { id: "n5", label: "PATENTS", x: 500, y: 590, r: 38, color: "#facc15", parent: "root", textColor: "#000" },
+
+  { id: "n6", label: "4 APPS →\n1 SUPER APP", x: 300, y: 590, r: 32, color: "#ec4899", parent: "root", textColor: "#fff" },
+
+  { id: "n7", label: "BETA\nLAUNCH", x: 700, y: 590, r: 32, color: "#ec4899", parent: "root", textColor: "#fff" },
+
+  // capture children
+
+  { id: "c1", label: "Drive\nSync", x: 110, y: 80, r: 24, color: "#00f5c4aa", parent: "n1", textColor: "#000" },
+
+  { id: "c2", label: "YouTube\nMiner", x: 210, y: 40, r: 24, color: "#00f5c4aa", parent: "n1", textColor: "#000" },
+
+  { id: "c3", label: "Chat\nImport", x: 320, y: 55, r: 24, color: "#00f5c4aa", parent: "n1", textColor: "#000" },
+
+  { id: "c4", label: "Email\nExtract", x: 130, y: 200, r: 24, color: "#00f5c4aa", parent: "n1", textColor: "#000" },
+
+  // generate children
+
+  { id: "g1", label: "Video\nDocs", x: 870, y: 70, r: 24, color: "#ff6b3580", parent: "n2", textColor: "#fff" },
+
+  { id: "g2", label: "Podcast\nGen", x: 760, y: 40, r: 24, color: "#ff6b3580", parent: "n2", textColor: "#fff" },
+
+  { id: "g3", label: "Book\nWriter", x: 650, y: 70, r: 24, color: "#ff6b3580", parent: "n2", textColor: "#fff" },
+
+  { id: "g4", label: "Slide\nMaker", x: 870, y: 200, r: 24, color: "#ff6b3580", parent: "n2", textColor: "#fff" },
+
+  // privacy children
+
+  { id: "p1c", label: "Zero\nKnow", x: 60, y: 310, r: 22, color: "#a855f780", parent: "n3", textColor: "#fff" },
+
+  { id: "p2c", label: "Local\nFirst", x: 60, y: 430, r: 22, color: "#a855f780", parent: "n3", textColor: "#fff" },
+
+  { id: "p3c", label: "Consent\nLayer", x: 140, y: 510, r: 22, color: "#a855f780", parent: "n3", textColor: "#fff" },
+
+  // connect children
+
+  { id: "co1", label: "NLP\nConnect", x: 940, y: 310, r: 22, color: "#3b82f680", parent: "n4", textColor: "#fff" },
+
+  { id: "co2", label: "Webhook\nHub", x: 940, y: 430, r: 22, color: "#3b82f680", parent: "n4", textColor: "#fff" },
+
+  { id: "co3", label: "Mobile\nCapture", x: 860, y: 510, r: 22, color: "#3b82f680", parent: "n4", textColor: "#fff" },
+
+  // patent children
+
+  { id: "pt1", label: "Proof\nof Creation", x: 390, y: 660, r: 22, color: "#facc1580", parent: "n5", textColor: "#000" },
+
+  { id: "pt2", label: "People's\nPatent Pool", x: 500, y: 680, r: 22, color: "#facc1580", parent: "n5", textColor: "#000" },
+
+  { id: "pt3", label: "IP\nMonitor", x: 610, y: 660, r: 22, color: "#facc1580", parent: "n5", textColor: "#000" },
+
+];
+
+
+
+// ─────────────────────────────────────────────
+
+//  MAIN COMPONENT
+
+// ─────────────────────────────────────────────
+
+
+
+export default function GenesisCommandCenter() {
+
+  const [view, setView] = useState("roadmap");
+
+  const [phaseStates, setPhaseStates] = useState(() => Object.fromEntries(PHASES.map(p => [p.id, true])));
+
+  const [tasks, setTasks] = useState(() => {
+
+    const all = {};
+
+    PHASES.forEach(ph => ph.areas.forEach(a => a.tasks.forEach(t => { all[t.id] = { ...t }; })));
+
+    return all;
+
+  });
+
+  const [kanban, setKanban] = useState(initKanban);
+
+  const [dragCard, setDragCard] = useState(null);
+
+  const [ideaCat, setIdeaCat] = useState("ALL");
+
+  const [expandedIdea, setExpandedIdea] = useState(null);
+
+  const [search, setSearch] = useState("");
+
+  const [hoveredNode, setHoveredNode] = useState(null);
+
+  const [editingTask, setEditingTask] = useState(null);
+
+  const [editText, setEditText] = useState("");
+
+  const [newCardText, setNewCardText] = useState("");
+
+  const [addingToCol, setAddingToCol] = useState(null);
+
+
+
+  const toggleTask = (id) => setTasks(prev => ({ ...prev, [id]: { ...prev[id], done: !prev[id].done } }));
+
+  const togglePhase = (id) => setPhaseStates(prev => ({ ...prev, [id]: !prev[id] }));
+
+
+
+  const moveCard = (cardId, toCol) => {
+
+    setKanban(prev => prev.map(c => c.id === cardId ? { ...c, col: toCol } : c));
+
+  };
+
+
+
+  const addCard = (col) => {
+
+    if (!newCardText.trim()) return;
+
+    setKanban(prev => [...prev, {
+
+      id: `custom_${Date.now()}`, text: newCardText, priority: "medium",
+
+      col, phase: "Custom", area: "User Added", color: "#888"
+
+    }]);
+
+    setNewCardText("");
+
+    setAddingToCol(null);
+
+  };
+
+
+
+  const filteredIdeas = IDEAS_100.filter(i =>
+
+    (ideaCat === "ALL" || i.cat === ideaCat) &&
+
+    (i.title.toLowerCase().includes(search.toLowerCase()) || i.desc.toLowerCase().includes(search.toLowerCase()))
+
+  );
+
+
+
+  const totalTasks = Object.keys(tasks).length;
+
+  const doneTasks = Object.values(tasks).filter(t => t.done).length;
+
+  const pct = Math.round((doneTasks / totalTasks) * 100);
+
+
+
+  return (
+
+    <div style={{
+
+      minHeight: "100vh", background: "#060810", color: "#e0e8ff",
+
+      fontFamily: "'Courier New', monospace", userSelect: "none",
+
+    }}>
+
+      {/* HEADER */}
+
+      <div style={{
+
+        background: "linear-gradient(90deg, #060810 0%, #0d1224 50%, #060810 100%)",
+
+        borderBottom: "1px solid #00f5c440",
+
+        padding: "16px 24px",
+
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+
+        position: "sticky", top: 0, zIndex: 100,
+
+      }}>
+
+        <div>
+
+          <div style={{ fontSize: 11, color: "#00f5c4", letterSpacing: 6, marginBottom: 2 }}>
+
+            ◈ GENESIS SYSTEM
+
+          </div>
+
+          <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: 2, color: "#fff" }}>
+
+            COMMAND CENTER
+
+          </div>
+
+        </div>
+
+        <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+
+          <StatPill label="PROGRESS" value={`${pct}%`} color="#00f5c4" />
+
+          <StatPill label="TASKS" value={`${doneTasks}/${totalTasks}`} color="#ff6b35" />
+
+          <StatPill label="IDEAS" value="100" color="#facc15" />
+
+          <StatPill label="PHASES" value="5" color="#a855f7" />
+
+        </div>
+
+      </div>
+
+
+
+      {/* PROGRESS BAR */}
+
+      <div style={{ height: 3, background: "#111", position: "relative" }}>
+
+        <div style={{ height: 3, width: `${pct}%`, background: "linear-gradient(90deg,#00f5c4,#3b82f6)", transition: "width .5s" }} />
+
+      </div>
+
+
+
+      {/* NAV */}
+
+      <div style={{
+
+        display: "flex", gap: 4, padding: "12px 24px",
+
+        background: "#080c1a", borderBottom: "1px solid #ffffff10",
+
+      }}>
+
+        {[
+
+          { id: "roadmap", label: "🗺 ROADMAP" },
+
+          { id: "kanban", label: "📋 KANBAN" },
+
+          { id: "mindmap", label: "🧠 MIND MAP" },
+
+          { id: "ideas", label: "💡 100 IDEAS" },
+
+          { id: "moat", label: "🛡 PATENT MOAT" },
+
+        ].map(tab => (
+
+          <button key={tab.id} onClick={() => setView(tab.id)} style={{
+
+            padding: "8px 18px", fontSize: 11, letterSpacing: 2, fontWeight: 700,
+
+            border: "1px solid",
+
+            borderColor: view === tab.id ? "#00f5c4" : "#ffffff20",
+
+            background: view === tab.id ? "#00f5c415" : "transparent",
+
+            color: view === tab.id ? "#00f5c4" : "#888",
+
+            cursor: "pointer", borderRadius: 4, transition: "all .2s",
+
+            fontFamily: "inherit",
+
+          }}>{tab.label}</button>
+
+        ))}
+
+      </div>
+
+
+
+      {/* VIEWS */}
+
+      <div style={{ padding: "24px", maxWidth: 1200, margin: "0 auto" }}>
+
+
+
+        {/* ── ROADMAP ── */}
+
+        {view === "roadmap" && (
+
+          <div>
+
+            <SectionTitle>MASTER ROADMAP — 5 PHASES TO DOMINANCE</SectionTitle>
+
+            {PHASES.map(phase => (
+
+              <div key={phase.id} style={{
+
+                marginBottom: 16, border: `1px solid ${phase.color}40`,
+
+                borderRadius: 8, overflow: "hidden",
+
+              }}>
+
+                <div
+
+                  onClick={() => togglePhase(phase.id)}
+
+                  style={{
+
+                    padding: "14px 20px", cursor: "pointer",
+
+                    background: `linear-gradient(90deg, ${phase.color}18, transparent)`,
+
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+
+                  }}
+
+                >
+
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+
+                    <span style={{ color: phase.color, fontSize: 11, fontWeight: 900, letterSpacing: 3 }}>
+
+                      {phase.label}
+
+                    </span>
+
+                    <span style={{ color: "#fff", fontSize: 15, fontWeight: 700 }}>{phase.title}</span>
+
+                    <PhaseTag status={phase.status} />
+
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+
+                    <span style={{ color: "#888", fontSize: 11 }}>{phase.eta}</span>
+
+                    <span style={{ color: phase.color, fontSize: 14 }}>{phaseStates[phase.id] ? "▼" : "▶"}</span>
+
+                  </div>
+
+                </div>
+
+                {phaseStates[phase.id] && (
+
+                  <div style={{ padding: "12px 20px 16px" }}>
+
+                    {phase.areas.map(area => (
+
+                      <div key={area.id} style={{ marginBottom: 16 }}>
+
+                        <div style={{ fontSize: 12, color: "#aaa", letterSpacing: 2, marginBottom: 8 }}>
+
+                          {area.icon} {area.title}
+
+                        </div>
+
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+
+                          {area.tasks.map(task => {
+
+                            const t = tasks[task.id];
+
+                            return (
+
+                              <div key={task.id} style={{
+
+                                display: "flex", alignItems: "center", gap: 10,
+
+                                padding: "8px 12px", borderRadius: 4,
+
+                                background: t.done ? "#ffffff08" : "#0d1224",
+
+                                border: `1px solid ${t.done ? "#00f5c430" : "#ffffff10"}`,
+
+                                opacity: t.done ? 0.6 : 1,
+
+                              }}>
+
+                                <div
+
+                                  onClick={() => toggleTask(task.id)}
+
+                                  style={{
+
+                                    width: 16, height: 16, borderRadius: 3,
+
+                                    border: `2px solid ${t.done ? "#00f5c4" : phase.color}`,
+
+                                    background: t.done ? "#00f5c4" : "transparent",
+
+                                    cursor: "pointer", flexShrink: 0,
+
+                                    display: "flex", alignItems: "center", justifyContent: "center",
+
+                                    fontSize: 10, color: "#000",
+
+                                  }}>{t.done ? "✓" : ""}</div>
+
+                                {editingTask === task.id ? (
+
+                                  <input
+
+                                    autoFocus value={editText}
+
+                                    onChange={e => setEditText(e.target.value)}
+
+                                    onBlur={() => {
+
+                                      setTasks(prev => ({ ...prev, [task.id]: { ...prev[task.id], text: editText } }));
+
+                                      setEditingTask(null);
+
+                                    }}
+
+                                    onKeyDown={e => { if (e.key === "Enter") { setTasks(prev => ({ ...prev, [task.id]: { ...prev[task.id], text: editText } })); setEditingTask(null); } }}
+
+                                    style={{
+
+                                      flex: 1, background: "#1a2040", border: "1px solid #00f5c4",
+
+                                      color: "#fff", padding: "2px 8px", borderRadius: 3,
+
+                                      fontFamily: "inherit", fontSize: 13,
+
+                                    }}
+
+                                  />
+
+                                ) : (
+
+                                  <span
+
+                                    onDoubleClick={() => { setEditingTask(task.id); setEditText(t.text); }}
+
+                                    style={{ flex: 1, fontSize: 13, color: t.done ? "#666" : "#ddd", textDecoration: t.done ? "line-through" : "none", cursor: "text" }}
+
+                                    title="Double-click to edit"
+
+                                  >{t.text}</span>
+
+                                )}
+
+                                <PriorityBadge p={t.priority} />
+
+                              </div>
+
+                            );
+
+                          })}
+
+                        </div>
+
+                      </div>
+
+                    ))}
+
+                  </div>
+
+                )}
+
+              </div>
+
+            ))}
+
+          </div>
+
+        )}
+
+
+
+        {/* ── KANBAN ── */}
+
+        {view === "kanban" && (
+
+          <div>
+
+            <SectionTitle>KANBAN BOARD — DRAG CARDS BETWEEN COLUMNS</SectionTitle>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12 }}>
+
+              {KANBAN_COLS.map(col => {
+
+                const colCards = kanban.filter(c => c.col === col.id);
+
+                return (
+
+                  <div
+
+                    key={col.id}
+
+                    onDragOver={e => e.preventDefault()}
+
+                    onDrop={() => { if (dragCard) { moveCard(dragCard, col.id); setDragCard(null); } }}
+
+                    style={{
+
+                      background: "#0d1224", borderRadius: 8,
+
+                      border: `1px solid ${col.color}50`,
+
+                      minHeight: 400, padding: 12,
+
+                    }}
+
+                  >
+
+                    <div style={{
+
+                      fontSize: 11, letterSpacing: 2, fontWeight: 700,
+
+                      color: col.color, marginBottom: 12, paddingBottom: 8,
+
+                      borderBottom: `1px solid ${col.color}30`,
+
+                      display: "flex", justifyContent: "space-between",
+
+                    }}>
+
+                      <span>{col.label}</span>
+
+                      <span style={{ color: "#666" }}>{colCards.length}</span>
+
+                    </div>
+
+                    {colCards.map(card => (
+
+                      <div
+
+                        key={card.id}
+
+                        draggable
+
+                        onDragStart={() => setDragCard(card.id)}
+
+                        style={{
+
+                          background: "#080c1a", borderRadius: 6,
+
+                          border: `1px solid ${card.color}40`,
+
+                          padding: "10px 12px", marginBottom: 8,
+
+                          cursor: "grab", borderLeft: `3px solid ${card.color}`,
+
+                        }}
+
+                      >
+
+                        <div style={{ fontSize: 10, color: card.color, letterSpacing: 1, marginBottom: 4 }}>
+
+                          {card.phase} · {card.area}
+
+                        </div>
+
+                        <div style={{ fontSize: 12, color: "#ddd", lineHeight: 1.4 }}>{card.text}</div>
+
+                        <div style={{ marginTop: 6 }}>
+
+                          <PriorityBadge p={card.priority} />
+
+                        </div>
+
+                      </div>
+
+                    ))}
+
+                    {addingToCol === col.id ? (
+
+                      <div style={{ marginTop: 8 }}>
+
+                        <textarea
+
+                          autoFocus value={newCardText}
+
+                          onChange={e => setNewCardText(e.target.value)}
+
+                          placeholder="New task..."
+
+                          style={{
+
+                            width: "100%", background: "#1a2040", border: "1px solid #00f5c4",
+
+                            color: "#fff", padding: 8, borderRadius: 4,
+
+                            fontFamily: "inherit", fontSize: 12, resize: "none", boxSizing: "border-box",
+
+                          }}
+
+                          rows={3}
+
+                        />
+
+                        <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+
+                          <button onClick={() => addCard(col.id)} style={btnStyle("#00f5c4")}>ADD</button>
+
+                          <button onClick={() => { setAddingToCol(null); setNewCardText(""); }} style={btnStyle("#888")}>CANCEL</button>
+
+                        </div>
+
+                      </div>
+
+                    ) : (
+
+                      <button onClick={() => setAddingToCol(col.id)} style={{
+
+                        width: "100%", padding: "8px", background: "transparent",
+
+                        border: "1px dashed #ffffff20", color: "#666", cursor: "pointer",
+
+                        borderRadius: 4, fontFamily: "inherit", fontSize: 11, marginTop: 4,
+
+                      }}>+ ADD CARD</button>
+
+                    )}
+
+                  </div>
+
+                );
+
+              })}
+
+            </div>
+
+          </div>
+
+        )}
+
+
+
+        {/* ── MIND MAP ── */}
+
+        {view === "mindmap" && (
+
+          <div>
+
+            <SectionTitle>MIND MAP — GENESIS ECOSYSTEM</SectionTitle>
+
+            <div style={{ background: "#080c1a", borderRadius: 12, border: "1px solid #ffffff10", overflow: "hidden" }}>
+
+              <svg width="100%" viewBox="0 0 1000 720" style={{ display: "block" }}>
+
+                <defs>
+
+                  <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+
+                    <stop offset="0%" stopColor="#00f5c4" stopOpacity="0.3" />
+
+                    <stop offset="100%" stopColor="#00f5c4" stopOpacity="0" />
+
+                  </radialGradient>
+
+                  <filter id="blur">
+
+                    <feGaussianBlur stdDeviation="8" result="coloredBlur" />
+
+                    <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
+
+                  </filter>
+
+                </defs>
+
+                {/* Background grid */}
+
+                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+
+                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff05" strokeWidth="1" />
+
+                </pattern>
+
+                <rect width="1000" height="720" fill="url(#grid)" />
+
+
+
+                {/* Edges */}
+
+                {MINDMAP_NODES.filter(n => n.parent).map(n => {
+
+                  const parent = MINDMAP_NODES.find(p => p.id === n.parent);
+
+                  if (!parent) return null;
+
+                  return (
+
+                    <line key={`e_${n.id}`}
+
+                      x1={parent.x} y1={parent.y} x2={n.x} y2={n.y}
+
+                      stroke={n.color} strokeWidth={n.parent === "root" ? 1.5 : 1}
+
+                      strokeOpacity={0.4} strokeDasharray={n.parent === "root" ? "none" : "4 3"}
+
+                    />
+
+                  );
+
+                })}
+
+
+
+                {/* Nodes */}
+
+                {MINDMAP_NODES.map(n => (
+
+                  <g key={n.id}
+
+                    onMouseEnter={() => setHoveredNode(n.id)}
+
+                    onMouseLeave={() => setHoveredNode(null)}
+
+                    style={{ cursor: "pointer" }}
+
+                  >
+
+                    {hoveredNode === n.id && (
+
+                      <circle cx={n.x} cy={n.y} r={n.r + 10} fill={n.color} opacity={0.15} />
+
+                    )}
+
+                    <circle cx={n.x} cy={n.y} r={n.r}
+
+                      fill={n.id === "root" ? n.color : `${n.color}22`}
+
+                      stroke={n.color} strokeWidth={n.id === "root" ? 2 : 1}
+
+                    />
+
+                    {n.label.split("\n").map((line, i) => (
+
+                      <text key={i} x={n.x} y={n.y + (i - (n.label.split("\n").length - 1) / 2) * 13}
+
+                        textAnchor="middle" dominantBaseline="middle"
+
+                        fontSize={n.id === "root" ? 11 : 9}
+
+                        fontWeight={700} fill={n.textColor}
+
+                        fontFamily="'Courier New', monospace"
+
+                        letterSpacing={0.5}
+
+                      >{line}</text>
+
+                    ))}
+
+                  </g>
+
+                ))}
+
+              </svg>
+
+            </div>
+
+            <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
+
+              {Object.entries(CAT_COLORS).map(([cat, color]) => (
+
+                <div key={cat} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#888" }}>
+
+                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: color }} />
+
+                  {cat}
+
+                </div>
+
+              ))}
+
+            </div>
+
+          </div>
+
+        )}
+
+
+
+        {/* ── 100 IDEAS ── */}
+
+        {view === "ideas" && (
+
+          <div>
+
+            <SectionTitle>100 NOVEL PATENTABLE IDEAS — PEOPLE'S AI REVOLUTION</SectionTitle>
+
+            <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
+
+              {IDEA_CATS.map(cat => (
+
+                <button key={cat} onClick={() => setIdeaCat(cat)} style={{
+
+                  padding: "6px 14px", fontSize: 10, letterSpacing: 2,
+
+                  border: `1px solid ${ideaCat === cat ? (CAT_COLORS[cat] || "#00f5c4") : "#ffffff20"}`,
+
+                  background: ideaCat === cat ? `${CAT_COLORS[cat] || "#00f5c4"}20` : "transparent",
+
+                  color: ideaCat === cat ? (CAT_COLORS[cat] || "#00f5c4") : "#888",
+
+                  cursor: "pointer", borderRadius: 4, fontFamily: "inherit",
+
+                }}>{cat}</button>
+
+              ))}
+
+              <input
+
+                value={search} onChange={e => setSearch(e.target.value)}
+
+                placeholder="SEARCH IDEAS..."
+
+                style={{
+
+                  marginLeft: "auto", padding: "6px 14px", background: "#0d1224",
+
+                  border: "1px solid #ffffff20", color: "#fff", borderRadius: 4,
+
+                  fontFamily: "inherit", fontSize: 11, outline: "none", width: 200,
+
+                }}
+
+              />
+
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 10 }}>
+
+              {filteredIdeas.map(idea => {
+
+                const color = CAT_COLORS[idea.cat] || "#888";
+
+                const expanded = expandedIdea === idea.id;
+
+                return (
+
+                  <div
+
+                    key={idea.id}
+
+                    onClick={() => setExpandedIdea(expanded ? null : idea.id)}
+
+                    style={{
+
+                      background: "#0d1224", borderRadius: 8,
+
+                      border: `1px solid ${expanded ? color : color + "40"}`,
+
+                      padding: "14px 16px", cursor: "pointer",
+
+                      transition: "all .2s",
+
+                      borderLeft: `3px solid ${color}`,
+
+                    }}
+
+                  >
+
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+
+                      <span style={{ fontSize: 11, color: "#666", fontWeight: 700, minWidth: 28 }}>
+
+                        #{String(idea.id).padStart(2, "0")}
+
+                      </span>
+
+                      <div style={{ flex: 1 }}>
+
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{idea.title}</span>
+
+                          <span style={{
+
+                            fontSize: 9, padding: "2px 6px", borderRadius: 3,
+
+                            background: `${color}30`, color, letterSpacing: 1,
+
+                          }}>{idea.cat}</span>
+
+                        </div>
+
+                        {expanded && (
+
+                          <>
+
+                            <p style={{ fontSize: 12, color: "#aaa", margin: "8px 0 6px", lineHeight: 1.5 }}>
+
+                              {idea.desc}
+
+                            </p>
+
+                            <div style={{
+
+                              background: "#facc1510", border: "1px solid #facc1530",
+
+                              borderRadius: 4, padding: "8px 10px", marginTop: 8,
+
+                            }}>
+
+                              <div style={{ fontSize: 9, color: "#facc15", letterSpacing: 2, marginBottom: 4 }}>
+
+                                ⚖ PATENT CLAIM DIRECTION
+
+                              </div>
+
+                              <div style={{ fontSize: 11, color: "#e0cc80", lineHeight: 1.4 }}>{idea.patent}</div>
+
+                            </div>
+
+                          </>
+
+                        )}
+
+                        {!expanded && (
+
+                          <p style={{ fontSize: 11, color: "#666", margin: "4px 0 0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+
+                            {idea.desc}
+
+                          </p>
+
+                        )}
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                );
+
+              })}
+
+            </div>
+
+            <div style={{ marginTop: 16, fontSize: 11, color: "#666", textAlign: "center" }}>
+
+              {filteredIdeas.length} ideas shown · Click any card to expand patent claim direction
+
+            </div>
+
+          </div>
+
+        )}
+
+
+
+        {/* ── PATENT MOAT ── */}
+
+        {view === "moat" && (
+
+          <div>
+
+            <SectionTitle>DEFENSIVE PATENT MOAT STRATEGY</SectionTitle>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 16 }}>
+
+              {[
+
+                {
+
+                  icon: "⚡", title: "PROVISIONAL PATENTS — FILE NOW", color: "#ff6b35",
+
+                  items: [
+
+                    "Genesis Engine universal ingestion system",
+
+                    "Any-to-Any content transformation pipeline",
+
+                    "People-sovereign AI interaction OS layer",
+
+                    "Proof-of-creation blockchain registration",
+
+                    "Consent firewall with granular per-source control",
+
+                    "Cross-LLM conversation unification protocol",
+
+                    "Federated personal AI training on-device",
+
+                    "Natural language API connector bootstrapping",
+
+                  ]
+
+                },
+
+                {
+
+                  icon: "🏰", title: "TRADE SECRETS — PROTECT INTERNALLY", color: "#a855f7",
+
+                  items: [
+
+                    "Proprietary AI prompt engineering system",
+
+                    "Semantic relevance scoring algorithms",
+
+                    "User expertise fingerprint model",
+
+                    "Content routing classification system",
+
+                    "Internal training data and fine-tune methods",
+
+                    "Business logic and workflow automation rules",
+
+                    "Customer data patterns and usage insights",
+
+                    "Competitive intelligence gathering methods",
+
+                  ]
+
+                },
+
+                {
+
+                  icon: "©", title: "COPYRIGHTS — REGISTER NOW", color: "#00f5c4",
+
+                  items: [
+
+                    "All written works, books, transmedia content",
+
+                    "Software source code (all repos)",
+
+                    "UI designs, brand assets, logos",
+
+                    "All audio/video content created",
+
+                    "Course materials and educational content",
+
+                    "Documentation and guides",
+
+                    "The 100 ideas document (this one)",
+
+                    "All AI-generated content with your prompts",
+
+                  ]
+
+                },
+
+                {
+
+                  icon: "™", title: "TRADEMARKS — REGISTER THESE", color: "#facc15",
+
+                  items: [
+
+                    "Genesis Engine™",
+
+                    "TransMedia Engine™",
+
+                    "Genesis Command Center™",
+
+                    "The People's AI™",
+
+                    "Content DNA™ (if applicable)",
+
+                    "Your app names and brand names",
+
+                    "Any unique terminology you coin",
+
+                    "Slogans and taglines",
+
+                  ]
+
+                },
+
+                {
+
+                  icon: "🔒", title: "DEFENSIVE PUBLICATIONS — BLOCK OTHERS", color: "#3b82f6",
+
+                  items: [
+
+                    "Publish the 100 ideas as timestamped prior art",
+
+                    "Post technical blogs describing novel methods",
+
+                    "File defensive disclosures with IP.com",
+
+                    "Submit to GitHub with clear timestamps",
+
+                    "Notarize key documents with blockchain",
+
+                    "Post on arXiv if technical enough",
+
+                    "Create YouTube walkthroughs (prior art)",
+
+                    "Send certified letter to yourself (backup)",
+
+                  ]
+
+                },
+
+                {
+
+                  icon: "⚔️", title: "COMPETITIVE MOAT — MAKE IT HARD TO COPY", color: "#ec4899",
+
+                  items: [
+
+                    "Network effects: more users = better AI",
+
+                    "Data flywheel: usage improves the system",
+
+                    "Ecosystem lock-in via integrations",
+
+                    "Brand trust as the privacy-first AI",
+
+                    "Community & cooperative ownership model",
+
+                    "First-mover advantage in people-owned AI",
+
+                    "Open-source core, proprietary services",
+
+                    "Deep domain expertise in transmedia",
+
+                  ]
+
+                },
+
+              ].map(section => (
+
+                <div key={section.title} style={{
+
+                  background: "#0d1224", borderRadius: 8,
+
+                  border: `1px solid ${section.color}40`,
+
+                  padding: 20,
+
+                }}>
+
+                  <div style={{ fontSize: 13, fontWeight: 700, color: section.color, marginBottom: 14, letterSpacing: 1 }}>
+
+                    {section.icon} {section.title}
+
+                  </div>
+
+                  {section.items.map((item, i) => (
+
+                    <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "flex-start" }}>
+
+                      <span style={{ color: section.color, flexShrink: 0 }}>›</span>
+
+                      <span style={{ fontSize: 12, color: "#ccc", lineHeight: 1.4 }}>{item}</span>
+
+                    </div>
+
+                  ))}
+
+                </div>
+
+              ))}
+
+            </div>
+
+
+
+            {/* Timeline */}
+
+            <div style={{ marginTop: 24, background: "#0d1224", borderRadius: 8, border: "1px solid #00f5c430", padding: 20 }}>
+
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#00f5c4", marginBottom: 16, letterSpacing: 1 }}>
+
+                🚨 IP PROTECTION TIMELINE — DO THIS IN ORDER
+
+              </div>
+
+              {[
+
+                { time: "TODAY", action: "Document everything with timestamps. Screenshot, commit to GitHub, send email to yourself.", color: "#ff4444" },
+
+                { time: "WEEK 1", action: "File provisional patent applications for Genesis Engine + TransMedia Engine core innovations.", color: "#ff6b35" },
+
+                { time: "WEEK 1", action: "Publish defensive disclosure for the 100 ideas to establish prior art.", color: "#ff6b35" },
+
+                { time: "WEEK 2", action: "Consult IP attorney for freedom-to-operate analysis on core technology.", color: "#facc15" },
+
+                { time: "WEEK 2", action: "File copyright registrations for all existing code, writing, and media.", color: "#facc15" },
+
+                { time: "MONTH 1", action: "File trademark applications for primary brand names and product names.", color: "#00f5c4" },
+
+                { time: "MONTH 3", action: "File utility patents (full) for the 3–5 most novel and defensible innovations.", color: "#3b82f6" },
+
+                { time: "MONTH 6", action: "Re-evaluate IP landscape, file continuation patents as product evolves.", color: "#a855f7" },
+
+              ].map((step, i) => (
+
+                <div key={i} style={{ display: "flex", gap: 16, marginBottom: 10, alignItems: "flex-start" }}>
+
+                  <span style={{ fontSize: 10, fontWeight: 900, color: step.color, minWidth: 70, letterSpacing: 1 }}>{step.time}</span>
+
+                  <span style={{ fontSize: 12, color: "#ccc", lineHeight: 1.5 }}>{step.action}</span>
+
+                </div>
+
+              ))}
+
+            </div>
+
+          </div>
+
+        )}
+
+      </div>
+
+
+
+      {/* FOOTER */}
+
+      <div style={{
+
+        borderTop: "1px solid #ffffff10", padding: "12px 24px",
+
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+
+        fontSize: 10, color: "#444", marginTop: 24,
+
+      }}>
+
+        <span>◈ GENESIS COMMAND CENTER — DOUBLE-CLICK TASKS TO EDIT · DRAG KANBAN CARDS</span>
+
+        <span>{new Date().toLocaleDateString()}</span>
+
+      </div>
+
+    </div>
+
+  );
+
+}
+
+
+
+// ─────────────────────────────────────────────
+
+//  SUB COMPONENTS
+
+// ─────────────────────────────────────────────
+
+
+
+function StatPill({ label, value, color }) {
+
+  return (
+
+    <div style={{ textAlign: "center" }}>
+
+      <div style={{ fontSize: 18, fontWeight: 900, color }}>{value}</div>
+
+      <div style={{ fontSize: 9, color: "#666", letterSpacing: 2 }}>{label}</div>
+
+    </div>
+
+  );
+
+}
+
+
+
+function SectionTitle({ children }) {
+
+  return (
+
+    <div style={{ fontSize: 11, color: "#00f5c4", letterSpacing: 4, marginBottom: 20, fontWeight: 700 }}>
+
+      ◈ {children}
+
+    </div>
+
+  );
+
+}
+
+
+
+function PhaseTag({ status }) {
+
+  const cfg = { active: ["#00f5c4", "ACTIVE"], planned: ["#facc15", "PLANNED"], future: ["#888", "FUTURE"] };
+
+  const [color, label] = cfg[status] || ["#888", status];
+
+  return (
+
+    <span style={{
+
+      fontSize: 9, padding: "2px 7px", borderRadius: 10,
+
+      background: `${color}20`, color, letterSpacing: 1,
+
+    }}>{label}</span>
+
+  );
+
+}
+
+
+
+function PriorityBadge({ p }) {
+
+  const cfg = { critical: "#ff4444", high: "#ff6b35", medium: "#facc15", low: "#888" };
+
+  return (
+
+    <span style={{
+
+      fontSize: 9, padding: "1px 6px", borderRadius: 3,
+
+      background: `${cfg[p] || "#888"}25`, color: cfg[p] || "#888",
+
+      letterSpacing: 1,
+
+    }}>{p?.toUpperCase()}</span>
+
+  );
+
+}
+
+
+
+function btnStyle(color) {
+
+  return {
+
+    padding: "6px 12px", background: `${color}20`, border: `1px solid ${color}`,
+
+    color, cursor: "pointer", borderRadius: 4, fontFamily: "'Courier New', monospace",
+
+    fontSize: 11, fontWeight: 700,
+
+  };
+
+}
+
