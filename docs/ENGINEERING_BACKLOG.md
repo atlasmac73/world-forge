@@ -33,9 +33,14 @@ So this is not a wire-up — it's a **redesign against a chosen schema**, which 
 Recommendation: option 1 (richer, matches the acquisition workflow), but it's a deliberate build with design choices — **confirm the stage taxonomy/fields before starting.**
 
 ## P0 — Next.js security advisories (10: 1 critical, 5 high, 4 moderate)
-**Evidence:** `npm audit` — all in `next@14.2.35` + bundled `postcss`; the only listed fix is `npm audit fix --force` → **`next@16.2.9` (major, breaking)**.
+**Evidence:** `npm audit` — all in `next@14.2.35` + bundled `postcss`. No 14.x patch exists; full clearance needs `next@16.2.9`.
 
-Why not auto-done: a 14→16 jump changes App Router/runtime/config behavior and would likely break the build/deploy. Needs a dedicated, branch-isolated upgrade with full `check && test && build` and manual smoke testing. Do **not** run `--force` blind.
+**Empirically scoped on branch `claude/atlas-nextjs-security-upgrade` (WIP, do not merge):**
+- `next@15.5.19` reduces 10 → 7 vulns (1 critical remains); `next@16.2.9` is required to clear the critical. Both accept React 18 (no forced React 19).
+- **Done on that branch:** async `params`/`searchParams` codemod across 8 API route handlers + the `counties/[name]` client page (`await params` / `React.use`). Note: this codemod is **not** backward-compatible with next@14, so it must stay off the main line.
+- **Remaining before merge:** (1) `cookies()` is async in 15/16 — make `lib/supabase/server.ts` `createClient()` async and `await` it at **every** server call site (cascade across all API routes + server components); (2) `next.config.js` has options invalid in 16; (3) resolve a `next@16` ERESOLVE peer conflict; (4) full runtime smoke test on a preview.
+
+Why not finished autonomously: the `createClient()` async cascade changes every server data path and has runtime (caching/cookie) behavior changes that require smoke testing — a dedicated effort, not a mechanical change. Do **not** run `audit fix --force` blind.
 
 ---
 
