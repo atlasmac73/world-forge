@@ -66,6 +66,11 @@ export function PropertyMap({
   showControls = true,
 }: PropertyMapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
+  // Third-party Mapbox instances are loosely typed (dynamic import) and kept in
+  // refs so the map is not torn down when pins or callbacks change.
+  const mapInstanceRef = useRef<any>(null)
+  const mapboxRef = useRef<any>(null)
+  const markersRef = useRef<any[]>([])
   const [mapLoaded, setMapLoaded] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedPin, setSelectedPin] = useState<MapPin | null>(null)
@@ -73,74 +78,97 @@ export function PropertyMap({
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
   const hasMapbox = Boolean(mapboxToken)
 
+  const centerLng = center[0]
+  const centerLat = center[1]
+
+  // Keep the latest callbacks in refs so the map-init effect doesn't list them
+  // as dependencies — doing so would rebuild the whole map on every change.
+  const onPinClickRef = useRef(onPinClick)
+  const onMapClickRef = useRef(onMapClick)
+  useEffect(() => {
+    onPinClickRef.current = onPinClick
+    onMapClickRef.current = onMapClick
+  })
+
+  // Create the map instance. Re-runs only when the token, center, or zoom change.
   useEffect(() => {
     if (!hasMapbox || !mapRef.current) return
 
-    let mapInstance: unknown = null
+    let cancelled = false
 
     const initMap = async () => {
-      try {
-        // Dynamic import — only loads when token is present
-        const mapboxgl = await import('mapbox-gl').catch(() => null)
-        if (!mapboxgl) {
-          setError('mapbox-gl not installed')
-          return
-        }
-
-        mapboxgl.default.accessToken = mapboxToken
-
-        const map = new mapboxgl.default.Map({
-          container: mapRef.current!,
-          style: 'mapbox://styles/mapbox/dark-v11',
-          center,
-          zoom,
-        })
-
-        mapInstance = map
-
-        map.on('load', () => {
-          setMapLoaded(true)
-
-          // Add pins
-          pins.forEach(pin => {
-            const el = document.createElement('div')
-            el.style.cssText = `
-              width: 24px; height: 24px; border-radius: 50%;
-              background: ${getPinColor(pin.score)};
-              border: 2px solid white;
-              cursor: pointer;
-              box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-            `
-            el.onclick = () => {
-              setSelectedPin(pin)
-              onPinClick?.(pin)
-              pin.onClick?.()
-            }
-
-            new mapboxgl.default.Marker({ element: el })
-              .setLngLat([pin.longitude, pin.latitude])
-              .addTo(map)
-          })
-        })
-
-        map.on('click', (e: { lngLat: { lat: number; lng: number } }) => {
-          onMapClick?.({ lat: e.lngLat.lat, lng: e.lngLat.lng })
-        })
-
-        map.on('error', () => setError('Map load error'))
-
-      } catch (err) {
-        setError('Failed to initialize map')
+      // Dynamic import — only loads when token is present
+      const mapboxgl = await import('mapbox-gl').catch(() => null)
+      if (!mapboxgl) {
+        setError('mapbox-gl not installed')
+        return
       }
+      if (cancelled || !mapRef.current) return
+
+      mapboxgl.default.accessToken = mapboxToken
+      mapboxRef.current = mapboxgl.default
+
+      const map = new mapboxgl.default.Map({
+        container: mapRef.current!,
+        style: 'mapbox://styles/mapbox/dark-v11',
+        center: [centerLng, centerLat],
+        zoom,
+      })
+
+      mapInstanceRef.current = map
+
+      map.on('load', () => setMapLoaded(true))
+
+      map.on('click', (e: { lngLat: { lat: number; lng: number } }) => {
+        onMapClickRef.current?.({ lat: e.lngLat.lat, lng: e.lngLat.lng })
+      })
+
+      map.on('error', () => setError('Map load error'))
     }
 
-    initMap()
+    initMap().catch(() => setError('Failed to initialize map'))
 
     return () => {
-      // @ts-expect-error -- cleanup
-      mapInstance?.remove?.()
+      cancelled = true
+      setMapLoaded(false)
+      mapInstanceRef.current?.remove?.()
+      mapInstanceRef.current = null
     }
-  }, [hasMapbox, center[0], center[1], zoom])
+  }, [hasMapbox, mapboxToken, centerLng, centerLat, zoom])
+
+  // Render pin markers. Re-runs when pins change or the map finishes loading,
+  // without rebuilding the map itself.
+  useEffect(() => {
+    const map = mapInstanceRef.current
+    const mapboxgl = mapboxRef.current
+    if (!map || !mapboxgl || !mapLoaded) return
+
+    pins.forEach(pin => {
+      const el = document.createElement('div')
+      el.style.cssText = `
+        width: 24px; height: 24px; border-radius: 50%;
+        background: ${getPinColor(pin.score)};
+        border: 2px solid white;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      `
+      el.onclick = () => {
+        setSelectedPin(pin)
+        onPinClickRef.current?.(pin)
+        pin.onClick?.()
+      }
+
+      const marker = new mapboxgl.Marker({ element: el })
+        .setLngLat([pin.longitude, pin.latitude])
+        .addTo(map)
+      markersRef.current.push(marker)
+    })
+
+    return () => {
+      markersRef.current.forEach(m => m.remove?.())
+      markersRef.current = []
+    }
+  }, [pins, mapLoaded])
 
   // Fallback: no Mapbox token — show pin list
   if (!hasMapbox) {
