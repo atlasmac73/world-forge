@@ -49,6 +49,7 @@ const NAV_SECTIONS: { title: string; items: NavItem[] }[] = [
       { id: 'ain' as Portal,         label: 'AIN Heatmap',         icon: <Activity size={15} />,        minTier: 'T2', badge: 'LIVE' },
       { id: 'scoring' as Portal,     label: 'Distress Scoring',    icon: <Gauge size={15} />,           minTier: 'T2', badge: 'LIVE' },
       { id: 'top250' as Portal,      label: 'Top 250 Matrix',      icon: <BarChart3 size={15} />,       minTier: 'T2', badge: 'LIVE' },
+      { label: 'Lead Pool',          icon: <Users size={15} />,           href: '/leads',                      badge: 'LIVE' },
       { id: 'pipeline' as Portal,    label: 'Deal Pipeline',       icon: <ClipboardList size={15} />,   badge: 'LIVE' },
       { id: 'underwriting' as Portal,label: 'Underwriting / MAO',  icon: <Crosshair size={15} />,       badge: 'LIVE' },
       { id: 'rehab' as Portal,       label: 'Rehab Estimator',     icon: <Wrench size={15} />,          badge: 'LIVE' },
